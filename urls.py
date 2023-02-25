@@ -24,7 +24,7 @@ def sendphonenumber():
         if result[0] == 'successful':
             
             return jsonify({"answer": "successful", 
-                            "user_id": result[0]})
+                            "user_id": result[1]})
         
         elif result[0] == 'verification_code_not_found':
             return jsonify({"answer": "verification_code_not_found"})
