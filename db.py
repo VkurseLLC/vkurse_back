@@ -50,5 +50,5 @@ def save_phone_number(connection, phome_number_value):
         
         except Error as e:
             print(f"Произошла ошибка сheck_user_block'{e}'")
-            bot.send_message(chat_id, f"Произошла ошибка в create_connection'{e}'")
+            bot.send_message(chat_id, f"Произошла ошибка в save_phone_number'{e}'")
             return e
