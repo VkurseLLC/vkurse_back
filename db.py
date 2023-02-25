@@ -20,7 +20,7 @@ def create_connection():
 
     except Error as e:
         print(f"Произошла ошибка в create_connection'{e}'")
-        bot.send_message(chat_id, f"Произошла ошибка в create_connection'{e}'")
+        bot.send_message(chat_id, f"Произошла ошибка в create_connection\n\n{e}")
         return connection
 
 def сheck(connection):
@@ -36,7 +36,7 @@ def сheck(connection):
         
         except Error as e:
             print(f"Произошла ошибка сheck_user_block'{e}'")
-            bot.send_message(chat_id, f"Произошла ошибка сheck_user_block'{e}'")
+            bot.send_message(chat_id, f"Произошла ошибка сheck\n\n{e}")
             return e
         
 
