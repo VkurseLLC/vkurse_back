@@ -1,5 +1,7 @@
 import mysql.connector
 from mysql.connector import Error
+from bot_config import *
+
 
 # create_connection
 def create_connection():
@@ -18,6 +20,7 @@ def create_connection():
 
     except Error as e:
         print(f"Произошла ошибка в create_connection'{e}'")
+        bot.send_message(chat_id, f"Произошла ошибка в create_connection'{e}'")
         return connection
 
 def сheck(connection):
@@ -33,6 +36,7 @@ def сheck(connection):
         
         except Error as e:
             print(f"Произошла ошибка сheck_user_block'{e}'")
+            bot.send_message(chat_id, f"Произошла ошибка в create_connection'{e}'")
             return e
         
 
@@ -45,4 +49,6 @@ def save_phone_number(connection, phome_number_value):
             return 'successful'
         
         except Error as e:
+            print(f"Произошла ошибка сheck_user_block'{e}'")
+            bot.send_message(chat_id, f"Произошла ошибка в create_connection'{e}'")
             return e
