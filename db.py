@@ -1,7 +1,7 @@
 import mysql.connector
 from mysql.connector import Error
 from bot_config import *
-
+import hashlib
 
 # create_connection
 def create_connection():
@@ -39,16 +39,38 @@ def сheck(connection):
             bot.send_message(chat_id, f"Произошла ошибка сheck_user_block'{e}'")
             return e
         
-
-def save_phone_number(connection, phome_number_value):
+def user_authorisation(connection, phome_number_value, verification_code_value):
     with connection.cursor() as cursor:
         try:
-            code = 12345
-            cursor.executemany("INSERT INTO `phone_number_verification_code` (`id`, `phone_number`, `verification_code`, `dt_create`) VALUES (NULL, %s, %s, NOW())", [(str(phome_number_value), str(code))])
-            # connection.commit()
-            return 'successful'
+            phome_number_value  = (hashlib.sha256(repr(phome_number_value).encode())).hexdigest()
+            verification_code_value  = (hashlib.sha256(repr(verification_code_value).encode())).hexdigest()
+
+            cursor.execute("SELECT `id` FROM `phone_number_verification_codes` WHERE `phone_number` = %s AND verification_code = %s", (str(phome_number_value), str(verification_code_value)))
+            result = cursor.fetchall()
+
+            if len(result) != 0: 
+
+                cursor.execute("SELECT `id` FROM `users` WHERE `phone_number` = %s", (str(phome_number_value),))
+                result = cursor.fetchall()
+
+                if len(result) != 0:
+                    return ['successful', result[0][0]]
+                
+                else:
+                    cursor.executemany("INSERT INTO users (id, phone_number, dt_reg) VALUES (NULL, %s, NOW())", [(str(phome_number_value), )])
+                    connection.commit()
+
+                    cursor.execute("SELECT `id` FROM `users` WHERE `phone_number` = %s", (str(phome_number_value),))
+                    result = cursor.fetchall()
+
+                    return ['successful', result[0][0]]
+
+            else:
+                return ['verification_code_not_found']
         
         except Error as e:
             print(f"Произошла ошибка сheck_user_block'{e}'")
-            bot.send_message(chat_id, f"Произошла ошибка в save_phone_number\n\n{e}")
-            return 'error'
+            bot.send_message(chat_id, f"Произошла ошибка в check_auth\n\n{e}")
+            return ['error']
+
+
