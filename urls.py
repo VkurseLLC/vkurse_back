@@ -7,7 +7,7 @@ application = Flask(__name__)
 # 
 @application.route("/")
 def hello():
-   return "<h1>HellLLLLo!</h1>"
+   return "<h1>Hello!</h1>"
 
 @application.route('/sendphonenumber', methods=["GET", "POST"])
 def sendphonenumber():
