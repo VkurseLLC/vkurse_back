@@ -1,6 +1,6 @@
 import mysql.connector
 from mysql.connector import Error
-from bot_config import *
+# from bot_config import *
 import hashlib
 
 # create_connection
@@ -20,7 +20,7 @@ def create_connection():
 
     except Error as e:
         print(f"Произошла ошибка в create_connection'{e}'")
-        bot.send_message(chat_id, f"Произошла ошибка в create_connection\n\n{e}")
+        # bot.send_message(chat_id, f"Произошла ошибка в create_connection\n\n{e}")
         return connection
 
 def сheck(connection):
@@ -36,7 +36,7 @@ def сheck(connection):
         
         except Error as e:
             print(f"Произошла ошибка сheck_user_block'{e}'")
-            bot.send_message(chat_id, f"Произошла ошибка сheck\n\n{e}")
+            # bot.send_message(chat_id, f"Произошла ошибка сheck\n\n{e}")
             return e
         
 def user_authorisation(connection, phome_number_value, verification_code_value):
@@ -45,15 +45,11 @@ def user_authorisation(connection, phome_number_value, verification_code_value):
             print(phome_number_value, verification_code_value)
 
             phome_number_value  = (hashlib.sha256(repr(phome_number_value).encode())).hexdigest()
-            print('c3ff38fb3a2aa1929bfc2012911f705365b3c0ecce726fa4f2347c38fed03aa8')
-            print(phome_number_value)
-            verification_code_value  = (hashlib.sha256(repr(int(verification_code_value)).encode())).hexdigest()
-            print('69cece559c92be0636e7a599f93f7931a65ce61bb894633395709c17218e7ac0')
-            print(verification_code_value)
 
+            verification_code_value  = (hashlib.sha256(repr(int(verification_code_value)).encode())).hexdigest()
+   
             cursor.execute("SELECT `id` FROM `phone_number_verification_codes` WHERE `phone_number` = %s AND verification_code = %s", (str(phome_number_value), str(verification_code_value)))
             result = cursor.fetchall()
-            print(f'result: {result}')
 
             if len(result) != 0: 
 
@@ -77,5 +73,5 @@ def user_authorisation(connection, phome_number_value, verification_code_value):
         
         except Error as e:
             print(f"Произошла ошибка сheck_user_block'{e}'")
-            bot.send_message(chat_id, f"Произошла ошибка в check_auth\n\n{e}")
+            # bot.send_message(chat_id, f"Произошла ошибка в check_auth\n\n{e}")
             return ['error']

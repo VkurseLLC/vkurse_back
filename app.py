@@ -4,7 +4,8 @@ from db import *
 
 application = Flask(__name__)
 
-# 
+### 
+
 @application.route("/")
 def hello():
    return "<h1>Hello!</h1>"
@@ -31,6 +32,7 @@ def sendphonenumber():
         
         else:
             return jsonify({"answer": "error"})
-# 
+        
+###
 if __name__ == "__main__":
    application.run(host='0.0.0.0')
