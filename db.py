@@ -48,6 +48,7 @@ def user_authorisation(connection, phome_number_value, verification_code_value):
             phome_number_value = phome_number_value.replace('(','')
             phome_number_value = phome_number_value.replace(')','')
             phome_number_value = phome_number_value.replace('-','')
+            phome_number_value = phome_number_value.replace(' ','')
 
             phome_number_value  = (hashlib.sha256(repr(phome_number_value).encode())).hexdigest()
 
@@ -86,4 +87,4 @@ def user_authorisation(connection, phome_number_value, verification_code_value):
 
 # print(user_authorisation(create_connection(), '79287539056', 97173))
 
-# print(user_authorisation(create_connection(), '+7(928)753-90-56', 97173))
+# print(user_authorisation(create_connection(), '+7 (928) 753-90-56', 97173))
