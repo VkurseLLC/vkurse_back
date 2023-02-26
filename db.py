@@ -82,6 +82,8 @@ def user_authorisation(connection, phome_number_value, verification_code_value):
             return ['error']
 
 
-print(user_authorisation(create_connection(), '79287539056', 97173))
+# ТЕСТОВЫЕ ЗАПРОСЫ:
 
-print(user_authorisation(create_connection(), '+7(928)753-90-56', 97173))
+# print(user_authorisation(create_connection(), '79287539056', 97173))
+
+# print(user_authorisation(create_connection(), '+7(928)753-90-56', 97173))
