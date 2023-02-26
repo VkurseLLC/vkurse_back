@@ -42,7 +42,12 @@ def сheck(connection):
 def user_authorisation(connection, phome_number_value, verification_code_value):
     with connection.cursor() as cursor:
         try:
-            print(phome_number_value, verification_code_value)
+            # print(phome_number_value, verification_code_value)
+
+            phome_number_value = phome_number_value.replace('+','')
+            phome_number_value = phome_number_value.replace('(','')
+            phome_number_value = phome_number_value.replace(')','')
+            phome_number_value = phome_number_value.replace('-','')
 
             phome_number_value  = (hashlib.sha256(repr(phome_number_value).encode())).hexdigest()
 
@@ -75,3 +80,8 @@ def user_authorisation(connection, phome_number_value, verification_code_value):
             print(f"Произошла ошибка сheck_user_block'{e}'")
             # bot.send_message(chat_id, f"Произошла ошибка в check_auth\n\n{e}")
             return ['error']
+
+
+print(user_authorisation(create_connection(), '79287539056', 97173))
+
+print(user_authorisation(create_connection(), '+7(928)753-90-56', 97173))

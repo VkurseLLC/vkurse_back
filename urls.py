@@ -9,7 +9,7 @@ application = Flask(__name__)
 def hello():
    return "<h1>Hello!</h1>"
 
-@application.route('/sendphonenumber', methods=["GET", "POST"])
+@application.route('/authorisation', methods=["GET", "POST"])
 def sendphonenumber():
 
     if request.method =="POST":
