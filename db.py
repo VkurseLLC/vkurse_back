@@ -3,6 +3,8 @@ from mysql.connector import Error
 from bot_config import *
 import hashlib
 
+# ---------------------------------------------------------------------------------- #
+
 def create_connection():
     connection = None
 
@@ -14,7 +16,7 @@ def create_connection():
             password = 'T6XBwtgQ',
             database = 'vkurse_db')
 
-        print("Подключение к базе данных MySQL прошло успешно")
+        # print("Подключение к базе данных MySQL прошло успешно")
         return connection
 
     except Error as e:
@@ -22,22 +24,8 @@ def create_connection():
         bot.send_message(chat_id, f"Произошла ошибка в create_connection\n\n{e}")
         return connection
 
-def сheck(connection):
-    with connection.cursor() as cursor:
-        try:
-            cursor.execute("SELECT `phone_number` FROM `phone_number_verification_codes` WHERE `id` = 1")
-            result = cursor.fetchall()
+# ---------------------------------------------------------------------------------- #
 
-            if len(result) != 0:
-                return result[0][0]
-            else:
-                return 'Noresult'
-        
-        except Error as e:
-            print(f"Произошла ошибка сheck_user_block'{e}'")
-            bot.send_message(chat_id, f"Произошла ошибка сheck\n\n{e}")
-            return e
-        
 def user_authorisation(connection, phome_number_value, verification_code_value):
     with connection.cursor() as cursor:
         try:
@@ -79,6 +67,54 @@ def user_authorisation(connection, phome_number_value, verification_code_value):
             print(f"Произошла ошибка сheck_user_block'{e}'")
             bot.send_message(chat_id, f"Произошла ошибка в check_auth\n\n{e}")
             return ['error']
+
+def check_username_availability(connection, username_value):
+    with connection.cursor() as cursor:
+        try:
+            username_value = username_value.replace(' ','')
+            
+            # Делаем запрос на проверку занятости username
+            cursor.execute("SELECT `users_id`, `username` FROM `users_account_data` WHERE `username` = %s ORDER BY `dt_upd` DESC", (str(username_value),))
+            result = cursor.fetchall()
+            
+            # Если username не был найден в базе, то выводим True
+            if len(result) == 0:
+                return ['True']
+            
+            # Иначе делаем проверку на то, занят ли сейчас выбранный username у последнего держателя
+            else:
+                cursor.execute("SELECT `username` FROM `users_account_data` WHERE `users_id` = %s ORDER BY `dt_upd` DESC", (int(result[0][0]),))
+                result = cursor.fetchall()
+
+                if username_value != str(result[0][0]):
+                    return ['True']
+
+                else:
+                    return ['False']
+        
+        except Error as e:
+                print(f"Произошла ошибка check_username_availability: {e}")
+                bot.send_message(chat_id, f"Произошла ошибка в check_username_availability\n\n{e}")
+                return ['error']
+
+print(check_username_availability(create_connection(), "olardani"))
+
+
+
+
+# ---------------------------------------------------------------------------------- #
+
+def template(connection):
+    with connection.cursor() as cursor:
+        try:
+            pass
+        
+        except Error as e:
+                print(f"Произошла ошибка template: {e}")
+                bot.send_message(chat_id, f"Произошла ошибка в template\n\n{e}")
+                return ['error']
+
+# ---------------------------------------------------------------------------------- #
 
 
 # ТЕСТОВЫЕ ЗАПРОСЫ:
