@@ -96,12 +96,7 @@ def check_username_availability(connection, username_value):
                 print(f"Произошла ошибка check_username_availability: {e}")
                 bot.send_message(chat_id, f"Произошла ошибка в check_username_availability\n\n{e}")
                 return ['error']
-
-print(check_username_availability(create_connection(), "olardani"))
-
-
-
-
+        
 # ---------------------------------------------------------------------------------- #
 
 def template(connection):
