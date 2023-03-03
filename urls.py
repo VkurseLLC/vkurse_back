@@ -64,9 +64,13 @@ def url_filling_profile():
         result = filling_profile(create_connection(), users_id, username, first_name, d_birth, city)
 
         if result[0] == 'successful':
-            
             return jsonify({"answer": "successful"})
         
-        else:
+        elif result[0] == 'username_is_taken':
             return jsonify({"answer": "username_is_taken"})
+        
+        else:
+            return jsonify({"answer": "error"})
+        
+
 
