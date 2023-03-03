@@ -68,5 +68,5 @@ def url_filling_profile():
             return jsonify({"answer": "successful"})
         
         else:
-            return jsonify({"answer": "error"})
+            return jsonify({"answer": "username_is_taken"})
 
