@@ -100,11 +100,16 @@ def check_username_availability(connection, username_value):
 def filling_profile(connection, users_id, username, first_name, d_birth, city):
     with connection.cursor() as cursor:
         try:
-            cursor.executemany("INSERT INTO users_account_data (id, users_id, username, first_name, d_birth, city, dt_upd) VALUES (NULL, %s, %s, %s, %s, %s, NOW())",
-                                [(str(users_id), str(username), str(first_name), str(d_birth), str(city),)])
-            connection.commit()
+            check_username = check_username_availability(create_connection(), username)
+            if check_username == 'True':
+                cursor.executemany("INSERT INTO users_account_data (id, users_id, username, first_name, d_birth, city, dt_upd) VALUES (NULL, %s, %s, %s, %s, %s, NOW())",
+                                    [(str(users_id), str(username), str(first_name), str(d_birth), str(city),)])
+                connection.commit()
 
-            return ['successful'] 
+                return ['successful'] 
+            
+            else:
+                return ['username_is_taken']
 
 
         except Error as e:
