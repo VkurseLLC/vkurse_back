@@ -49,3 +49,24 @@ def url_check_username_availability():
         
         else:
             return jsonify({"answer": "error"})
+        
+@application.route('/filling_profile', methods=["GET", "POST"])
+def url_filling_profile():
+
+    if request.method == "POST":
+
+        users_id = request.form["users_id"]
+        username = request.form["username"]
+        first_name = request.form["first_name"]
+        d_birth = request.form["d_birth"]
+        city = request.form["city"]
+
+        result = filling_profile(create_connection(), users_id, username, first_name, d_birth, city)
+
+        if result[0] == 'successful':
+            
+            return jsonify({"answer": "successful"})
+        
+        else:
+            return jsonify({"answer": "error"})
+

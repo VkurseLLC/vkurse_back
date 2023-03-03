@@ -97,6 +97,22 @@ def check_username_availability(connection, username_value):
                 bot.send_message(chat_id, f"Произошла ошибка в check_username_availability\n\n{e}")
                 return ['error']
         
+def filling_profile(connection, users_id, username, first_name, d_birth, city):
+    with connection.cursor() as cursor:
+        try:
+            cursor.executemany("INSERT INTO users_account_data (id, users_id, username, first_name, d_birth, city, dt_upd) VALUES (NULL, %s, %s, %s, %s, %s, NOW())",
+                                [(str(users_id), str(username), str(first_name), str(d_birth), str(city),)])
+            connection.commit()
+
+            return ['successful'] 
+
+
+        except Error as e:
+                print(f"Произошла ошибка filling_profile: {e}")
+                bot.send_message(chat_id, f"Произошла ошибка в filling_profile\n\n{e}")
+                return ['error']
+
+    
 # ---------------------------------------------------------------------------------- #
 
 def template(connection):
@@ -117,3 +133,5 @@ def template(connection):
 # print(user_authorisation(create_connection(), '79287539056', 97173))
 
 # print(user_authorisation(create_connection(), '+7 (928) 753-90-56', 97173))
+
+# print(filling_profile(create_connection(), "2", "seemyown", "Semyon", "2003-07-03", "Rostov-on-Don"))
