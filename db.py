@@ -35,6 +35,7 @@ def user_authorisation(connection, phome_number_value, verification_code_value):
             phome_number_value = phome_number_value.replace(')','')
             phome_number_value = phome_number_value.replace('-','')
             phome_number_value = phome_number_value.replace(' ','')
+            
 
             phome_number_value  = (hashlib.sha256(repr(phome_number_value).encode())).hexdigest()
 
@@ -49,7 +50,16 @@ def user_authorisation(connection, phome_number_value, verification_code_value):
                 result = cursor.fetchall()
 
                 if len(result) != 0:
-                    return ['successful', result[0][0]]
+                    cursor.execute("SELECT `id` FROM `users_account_data` WHERE `users_id` = %s", (int(result[0][0]),))
+                    user_account_status = cursor.fetchall()
+
+                    if len(user_account_status) != 0:
+
+                        return ['successful', result[0][0], 'old_user']
+                    
+                    else:
+
+                        return ['successful', result[0][0], 'new_user']
                 
                 else:
                     cursor.executemany("INSERT INTO users (id, phone_number, dt_reg) VALUES (NULL, %s, NOW())", [(str(phome_number_value), )])
@@ -58,7 +68,16 @@ def user_authorisation(connection, phome_number_value, verification_code_value):
                     cursor.execute("SELECT `id` FROM `users` WHERE `phone_number` = %s", (str(phome_number_value),))
                     result = cursor.fetchall()
 
-                    return ['successful', result[0][0]]
+                    cursor.execute("SELECT `id` FROM `users_account_data` WHERE `users_id` = %s", (int(result[0][0]),))
+                    user_account_status = cursor.fetchall()
+
+                    if len(user_account_status) != 0:
+
+                        return ['successful', result[0][0], 'old_user']
+                    
+                    else:
+
+                        return ['successful', result[0][0], 'new_user']
 
             else:
                 return ['verification_code_not_found']
@@ -72,6 +91,7 @@ def check_username_availability(connection, username_value):
     with connection.cursor() as cursor:
         try:
             username_value = username_value.replace(' ','')
+            username_value.lower()
             
             # Делаем запрос на проверку занятости username
             cursor.execute("SELECT `users_id`, `username` FROM `users_account_data` WHERE `username` = %s ORDER BY `dt_upd` DESC", (str(username_value),))

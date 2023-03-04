@@ -22,7 +22,8 @@ def url_authorisation():
         if result[0] == 'successful':
             
             return jsonify({"answer": "successful", 
-                            "user_id": result[1]})
+                            "user_id": result[1],
+                            "user_account_status" : result[2]})
         
         elif result[0] == 'verification_code_not_found':
             return jsonify({"answer": "verification_code_not_found"})
