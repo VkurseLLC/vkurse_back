@@ -110,7 +110,7 @@ def filling_profile(connection, users_id, username, first_name, d_birth, city):
             # username = encrypt(repr(username), crypto_password)
             # first_name = encrypt(repr(first_name), crypto_password)
             # d_birth = encrypt(repr(d_birth), crypto_password) # Тип колонки в БД date, невозможно вставить строку
-            city = encrypt(repr(city), crypto_password)
+            # city = encrypt(repr(city), crypto_password)
 
             if check_username[0] == 'True':
                 cursor.executemany("INSERT INTO users_account_data (id, users_id, username, first_name, d_birth, city, dt_upd) VALUES (NULL, %s, %s, %s, %s, %s, NOW())",
