@@ -152,8 +152,11 @@ def city_selection(connection):
         try:
             cursor.execute("SELECT `city_name` FROM `cities`")
             result = cursor.fetchall()
-            # print(result)
-            return result
+            city = []
+            for cities in result:
+                city.append(cities[0])
+                
+            return city
         
         except Error as e:
                 print(f"Произошла ошибка template: {e}")
@@ -184,8 +187,8 @@ def template(connection):
 
 # print(filling_profile(create_connection(), "2", "seemyownn", "Semyon", "2003-07-03", "Ростов-на-Дону")) # Заполнение профиля
 
-print(user_authorisation(create_connection(), '79958932523', 80640)) # Прооверка авторизации пользователя
+# print(user_authorisation(create_connection(), '79958932523', 80640)) # Прооверка авторизации пользователя
 
-# city_selection(create_connection())
+city_selection(create_connection())
 
 # print(check_username_availability(create_connection(), "seemyownn"))
