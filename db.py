@@ -93,7 +93,7 @@ def check_username_availability(connection, username_value):
             cursor.execute("SELECT `users_id`, `username` FROM `users_account_data` WHERE `username` = %s ORDER BY `dt_upd` DESC", (str(username_value),))
             result = cursor.fetchall()
             
-            print(result)
+            # print(result)
             # Если username не был найден в базе, то выводим True
             if len(result) == 0:
                 return ['True']
@@ -126,7 +126,7 @@ def filling_profile(connection, users_id, username, first_name, d_birth, city):
 
             cursor.execute("SELECT `id` FROM `cities` WHERE `city_name` = %s", (str(city),))
             city_id = cursor.fetchall()[0][0]
-            print(str(city_id))
+            # print(str(city_id))
 
             if check_username[0] == 'True':
                 cursor.executemany("INSERT INTO users_account_data (id, users_id, username, first_name, d_birth, dt_upd) VALUES (NULL, %s, %s, %s, %s, NOW())",
@@ -155,7 +155,7 @@ def city_selection(connection):
             city = []
             for cities in result:
                 city.append(cities[0])
-                
+
             return city
         
         except Error as e:
@@ -189,6 +189,6 @@ def template(connection):
 
 # print(user_authorisation(create_connection(), '79958932523', 80640)) # Прооверка авторизации пользователя
 
-city_selection(create_connection())
+# city_selection(create_connection())
 
 # print(check_username_availability(create_connection(), "seemyownn"))
