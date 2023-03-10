@@ -94,10 +94,9 @@ def check_username_availability(connection, username_value):
     with connection.cursor() as cursor:
         try:
             username_value = username_value.replace(' ','')
-            # username_value = encrypt(repr(username_value), crypto_key)
             
             # Делаем запрос на проверку занятости username
-            cursor.execute("SELECT `users_id`, `username` FROM `users_account_data` WHERE `username` = %s ORDER BY `dt_upd` DESC", (str(username_value),))
+            cursor.execute("SELECT `users_id`, `username` FROM `users_username` WHERE `username` = %s ORDER BY `dt_upd` DESC", (str(username_value),))
             result = cursor.fetchall()
             
             # Если username не был найден в базе, то выводим True
@@ -106,7 +105,7 @@ def check_username_availability(connection, username_value):
             
             # Иначе делаем проверку на то, занят ли сейчас выбранный username у последнего держателя
             else:
-                cursor.execute("SELECT `username` FROM `users_account_data` WHERE `users_id` = %s ORDER BY `dt_upd` DESC", (int(result[0][0]),))
+                cursor.execute("SELECT `username` FROM `users_username` WHERE `users_id` = %s ORDER BY `dt_upd` DESC", (int(result[0][0]),))
                 result = cursor.fetchall()
 
                 if username_value != str(result[0][0]):
@@ -134,11 +133,14 @@ def filling_profile(connection, users_id, username, first_name, d_birth, city):
             city_id = cursor.fetchall()[0][0]
 
             if check_username[0] == 'True':
-                cursor.executemany("INSERT INTO users_account_data (id, users_id, username, first_name, d_birth, dt_upd) VALUES (NULL, %s, %s, %s, %s, NOW())",
-                                    [(str(users_id), str(username), str(first_name), str(d_birth),)])
-                connection.commit()
-                
-                cursor.executemany("INSERT INTO users_city (id, users_id, cities_id, dt_upd) VALUES (NULL, %s, %s, NOW())", [(int(users_id), int(city_id),)])
+
+                cursor.executemany("INSERT INTO `users_username` (`id`, `users_id`, `username`, `dt_upd`) VALUES (NULL, %s, %s, NOW())", [(int(users_id), str(username),)])
+
+                cursor.executemany("INSERT INTO `users_account_data` (`id`, `users_id`, `first_name`, `d_birth`, `dt_upd`) VALUES (NULL, %s, %s, %s, NOW())",
+                                    [(str(users_id), str(first_name), str(d_birth),)])
+
+                cursor.executemany("INSERT INTO `users_city` (`id`, `users_id`, `cities_id`, `dt_upd`) VALUES (NULL, %s, %s, NOW())", [(int(users_id), int(city_id),)])
+
                 connection.commit()
 
                 return ['successful']
@@ -164,30 +166,10 @@ def city_selection(connection):
             return city
         
         except Error as e:
-                print(f"Произошла ошибка template: {e}")
-                bot.send_message(chat_id, f"Произошла ошибка в template\n\n{e}")
+                print(f"Произошла ошибка city_selection: {e}")
+                bot.send_message(chat_id, f"Произошла ошибка в city_selection\n\n{e}")
                 return ['error']
 
-# def get_user_id(connection, phone_number_value):
-#     with connection.cursor() as cursor:
-#         try:
-#             phone_number_value = phone_number_value.replace('+','')
-#             phone_number_value = phone_number_value.replace('(','')
-#             phone_number_value = phone_number_value.replace(')','')
-#             phone_number_value = phone_number_value.replace('-','')
-#             phone_number_value = phone_number_value.replace(' ','')
-
-#             phone_number_value  = (hashlib.sha256(repr(phone_number_value).encode())).hexdigest()
-
-#             cursor.execute("SELECT `id` FROM `users` WHERE `phone_number` = %s", (str(phone_number_value),))
-#             result = cursor.fetchall()
-#             return result[0][0]
-        
-#         except Error as e:
-#                 print(f"Произошла ошибка get_user_id: {e}")
-#                 bot.send_message(chat_id, f"Произошла ошибка в get_user_id\n\n{e}")
-#                 return ['error']
-    
 # ---------------------------------------------------------------------------------- #
 
 def template(connection):
