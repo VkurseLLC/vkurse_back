@@ -77,15 +77,9 @@ def url_filling_profile():
 def url_city_selection():
 
     if request.method == "GET":
-         result = city_selection(create_connection())
-         city = []
-         for cities in result:
-            #  print(cities[0])
-             city.append(cities[0])
-        #  city = set(city)
-        #  print(list(city))
-        #  out = json.dumps(list(city))
-         return jsonify({f"{city}"})
+        result = city_selection(create_connection())
+
+        return result# jsonify({f"answer: {result[0]}"})
     
     else:
         return jsonify({"answer: error"})
