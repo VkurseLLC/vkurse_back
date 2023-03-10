@@ -66,6 +66,8 @@ def user_authorisation(connection, phome_number_value, verification_code_value):
 
                         cursor.execute("SELECT `id` FROM `users` WHERE `phone_number` = %s", (str(phome_number_value),))
                         result = cursor.fetchall()
+                        
+
                         cursor.execute("UPDATE `phone_number_verification_codes` SET `used`=true WHERE `verification_code` = %s", (str(verification_code_value),))
                         connection.commit()
 
@@ -87,13 +89,11 @@ def check_username_availability(connection, username_value):
         try:
             username_value = username_value.replace(' ','')
             # username_value = encrypt(repr(username_value), crypto_key)
-            # print(username_value)
             
             # Делаем запрос на проверку занятости username
             cursor.execute("SELECT `users_id`, `username` FROM `users_account_data` WHERE `username` = %s ORDER BY `dt_upd` DESC", (str(username_value),))
             result = cursor.fetchall()
             
-            # print(result)
             # Если username не был найден в базе, то выводим True
             if len(result) == 0:
                 return ['True']
@@ -119,14 +119,13 @@ def filling_profile(connection, users_id, username, first_name, d_birth, city):
 
         try:
             check_username = check_username_availability(create_connection(), username)
-
+            # users_id = get_user_id(create_connection(), )
             first_name = encrypt(repr(first_name), crypto_key)
             d_birth = encrypt(repr(d_birth), crypto_key) 
             
 
             cursor.execute("SELECT `id` FROM `cities` WHERE `city_name` = %s", (str(city),))
             city_id = cursor.fetchall()[0][0]
-            # print(str(city_id))
 
             if check_username[0] == 'True':
                 cursor.executemany("INSERT INTO users_account_data (id, users_id, username, first_name, d_birth, dt_upd) VALUES (NULL, %s, %s, %s, %s, NOW())",
@@ -163,6 +162,25 @@ def city_selection(connection):
                 bot.send_message(chat_id, f"Произошла ошибка в template\n\n{e}")
                 return ['error']
 
+# def get_user_id(connection, phone_number_value):
+#     with connection.cursor() as cursor:
+#         try:
+#             phone_number_value = phone_number_value.replace('+','')
+#             phone_number_value = phone_number_value.replace('(','')
+#             phone_number_value = phone_number_value.replace(')','')
+#             phone_number_value = phone_number_value.replace('-','')
+#             phone_number_value = phone_number_value.replace(' ','')
+
+#             phone_number_value  = (hashlib.sha256(repr(phone_number_value).encode())).hexdigest()
+
+#             cursor.execute("SELECT `id` FROM `users` WHERE `phone_number` = %s", (str(phone_number_value),))
+#             result = cursor.fetchall()
+#             return result[0][0]
+        
+#         except Error as e:
+#                 print(f"Произошла ошибка get_user_id: {e}")
+#                 bot.send_message(chat_id, f"Произошла ошибка в get_user_id\n\n{e}")
+#                 return ['error']
     
 # ---------------------------------------------------------------------------------- #
 
@@ -185,10 +203,12 @@ def template(connection):
 
 # print(user_authorisation(create_connection(), '+7 (928) 753-90-56', 97173))
 
-# print(filling_profile(create_connection(), "2", "seemyownn", "Semyon", "2003-07-03", "Ростов-на-Дону")) # Заполнение профиля
+# print(filling_profile(create_connection(), "2", "seemyownnn", "Semyon", "2003-07-03", "Ростов-на-Дону")) # Заполнение профиля
 
 # print(user_authorisation(create_connection(), '79958932523', 80640)) # Прооверка авторизации пользователя
 
 # city_selection(create_connection())
 
 # print(check_username_availability(create_connection(), "seemyownn"))
+
+print(get_user_id(create_connection(), "79958932523"))
