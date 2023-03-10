@@ -5,9 +5,6 @@ import os
 from Cryptodome.Random import get_random_bytes
 
 crypto_key = "Y3V1ba3FWwnd6u0O3ReoGzqNMBfBrw3DNIXOGfHJozlxyMwn2MSiK4TCJqAPgOn1" # Random 512-bit key
-# phone_number_value = 9958932523
-# crypto_key = (hashlib.sha256(repr(phone_number_value).encode())).hexdigest()
-# print(crypto_key)
 
 def encrypt(plain_text, password):
     # generate a random salt
@@ -28,10 +25,6 @@ def encrypt(plain_text, password):
         'tag': b64encode(tag).decode('utf-8')}
     
     return result
-
-    
-
-
 
 def decrypt(enc_dict, password):
     # decode the dictionary entries from base64

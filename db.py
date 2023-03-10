@@ -18,7 +18,6 @@ def create_connection():
             password = 'T6XBwtgQ',
             database = 'vkurse_db')
 
-        # print("Подключение к базе данных MySQL прошло успешно")
         return connection
 
     except Error as e:
@@ -39,43 +38,50 @@ def user_authorisation(connection, phome_number_value, verification_code_value):
             phome_number_value = phome_number_value.replace(' ','')
 
             phome_number_value  = (hashlib.sha256(repr(phome_number_value).encode())).hexdigest()
-            # phome_number_value = encrypt(repr(phome_number_value), crypto_password)
             verification_code_value  = (hashlib.sha256(repr(int(verification_code_value)).encode())).hexdigest()
-            # verification_code_value = encrypt(repr(verification_code_value), crypto_password)
 
-            cursor.execute("SELECT `id`, `dt_create`  FROM `phone_number_verification_codes` WHERE `phone_number` = %s AND verification_code = %s", (str(phome_number_value), str(verification_code_value)))
+            cursor.execute("SELECT `id` FROM `phone_number_verification_codes` WHERE `phone_number` = %s AND verification_code = %s AND TIMEDIFF (NOW(), `dt_create`) <= '00:03:00' AND `used` = 0",
+                            (str(phome_number_value), str(verification_code_value)))
             result = cursor.fetchall()
-            dt_create = result[0][1]
-            now = datetime.datetime.now()
-    
+            print(f'result: {result}')
+            
             if len(result) != 0: 
-                if now.minute - dt_create.minute < 3:
+
+                cursor.execute("UPDATE `phone_number_verification_codes` SET `used` = 1 WHERE `id` = %s", (str(result[0][0]),))
+                connection.commit()
+
+                cursor.execute("SELECT `id` FROM `users` WHERE `phone_number` = %s", (str(phome_number_value),))
+                result = cursor.fetchall()
+
+                if len(result) != 0:
+                    
+                    cursor.execute("SELECT `id` FROM `users_account_data` WHERE `users_id` = %s", (int(result[0][0]),))
+                    user_account_status = cursor.fetchall()
+
+                    if len(user_account_status) != 0:
+                        return ['successful', result[0][0], 'old_user']
+                    
+                    else:
+                        return ['successful', result[0][0], 'new_user']
+                
+                else:
+                    cursor.executemany("INSERT INTO users (id, phone_number, dt_reg) VALUES (NULL, %s, NOW())", [(str(phome_number_value), )])
+                    connection.commit()
 
                     cursor.execute("SELECT `id` FROM `users` WHERE `phone_number` = %s", (str(phome_number_value),))
                     result = cursor.fetchall()
 
-                    if len(result) != 0:
-                        cursor.execute("UPDATE `phone_number_verification_codes` SET `used`=1 WHERE `verification_coder` = %s", (str(verification_code_value),))
-                        connection.commit()
-                        return ['successful', result[0][0]]
-                    
+                    cursor.execute("SELECT `id` FROM `users_account_data` WHERE `users_id` = %s", (int(result[0][0]),))
+                    user_account_status = cursor.fetchall()
+
+                    if len(user_account_status) != 0:
+
+                        return ['successful', result[0][0], 'old_user']
                     
                     else:
-                        cursor.executemany("INSERT INTO users (id, phone_number, dt_reg) VALUES (NULL, %s, NOW())", [(str(phome_number_value), )])
-                        connection.commit()
 
-                        cursor.execute("SELECT `id` FROM `users` WHERE `phone_number` = %s", (str(phome_number_value),))
-                        result = cursor.fetchall()
-                        
+                        return ['successful', result[0][0], 'new_user']
 
-                        cursor.execute("UPDATE `phone_number_verification_codes` SET `used`=true WHERE `verification_code` = %s", (str(verification_code_value),))
-                        connection.commit()
-
-                        return ['successful', result[0][0]]
-                else:
-                    cursor.execute("UPDATE `phone_number_verification_codes` SET `used`=false WHERE `phone_number` = %s", (str(phome_number_value),))
-                    connection.commit()
-                    return ['verificarion_code_is_not_aviable']
             else:
                 return ['verification_code_not_found']
         
@@ -211,4 +217,4 @@ def template(connection):
 
 # print(check_username_availability(create_connection(), "seemyownn"))
 
-print(get_user_id(create_connection(), "79958932523"))
+# print(get_user_id(create_connection(), "79958932523"))
