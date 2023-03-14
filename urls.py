@@ -57,17 +57,32 @@ def url_filling_profile():
 
         users_id = request.form["users_id"]
         username = request.form["username"]
-        first_name = request.form["first_name"]
+        name_surname = request.form["name_surname"]
         d_birth = request.form["d_birth"]
         city = request.form["city"]
 
-        result = filling_profile(create_connection(), users_id, username, first_name, d_birth, city)
+        result = filling_profile(create_connection(), users_id, username, name_surname, d_birth, city)
 
         if result[0] == 'successful':
             return jsonify({"answer": "successful"})
         
         elif result[0] == 'username_is_taken':
             return jsonify({"answer": "username_is_taken"})
+        
+        else:
+            return jsonify({"answer": "error"})
+        
+@application.route('/add_about', methods=["GET", "POST"])
+def save_about():
+
+    if request.method == "POST":
+        users_id = request.form["users_id"]
+        about = request.form["about"]
+        
+        result = add_about(create_connection(), users_id, about)
+        
+        if result[0] == 'successful':
+            return jsonify({"answer": "successful"})
         
         else:
             return jsonify({"answer": "error"})
@@ -82,5 +97,19 @@ def url_city_selection():
     
     else:
         return jsonify({"answer: error"})
+
+@application.route('/user_profile', methods=["GET", "POST"])
+def url_user_profile():
+
+    if request.method == "GET":
+        users_id = request.form["users_id"]
+
+        result = user_profile(create_connection(), users_id)
+
+        return result
+    
+    else:
+        return jsonify({"answer: error"})
+
 
 
