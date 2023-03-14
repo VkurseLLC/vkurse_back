@@ -123,7 +123,7 @@ def check_username_availability(connection, username_value):
                 bot.send_message(chat_id, f"Произошла ошибка в check_username_availability\n\n{e}")
                 return ['error']
         
-def filling_profile(connection, users_id, username, name_surname, d_birth, city):
+def filling_profile(connection, users_id, username, name_surname, d_birth, city, photo):
     with connection.cursor() as cursor:
 
         try:
@@ -148,6 +148,13 @@ def filling_profile(connection, users_id, username, name_surname, d_birth, city)
 
                 cursor.executemany("INSERT INTO `users_city` (`id`, `users_id`, `cities_id`, `dt_upd`) VALUES (NULL, %s, %s, NOW())", [(int(users_id), int(city_id),)])
 
+                if photo == None:
+                     
+                     cursor.executemany("INSERT INTO `users_photo` (`id`, `users_id`, `path_to_photo`, `dt_upd`) VALUES (NULL, %s , 'img\profile_photo.jpg', NOW())", [(int(users_id),)])
+
+                else:
+                     pass
+                
                 connection.commit()
 
                 return ['successful']
@@ -207,8 +214,11 @@ def user_profile(connection, user_id):
             result = cursor.fetchall()
             about = result[0][0]
             # print(about)
+            cursor.execute("SELECT `path_to_photo` FROM `users_photo` WHERE `users_id` = %s ORDER BY `dt_upd` DESC", (int(user_id),))
+            result = cursor.fetchall()
+            photo = result[0][0]
 
-            return [name_surname, str(age), city, '+7'+ phone_number, username, about]
+            return [name_surname, str(age), city, '+7'+ phone_number, username, about, photo]
         except Error as e:
                 print(f"Произошла ошибка user_profile: {e}")
                 bot.send_message(chat_id, f"Произошла ошибка в user_profile\n\n{e}")
@@ -250,7 +260,7 @@ def template(connection):
 
 # print(user_authorisation(create_connection(), '+7 (928) 753-90-56', 97173))
 
-# print(filling_profile(create_connection(), "2", "seemyown2", "Семён Альбеев", "2003-07-03", "Ростов-на-Дону")) # Заполнение профиля
+print(filling_profile(create_connection(), "2", "seemyown3", "Семён Альбеев", "2003-07-03", "Ростов-на-Дону", None)) # Заполнение профиля
 
 # print(user_authorisation(create_connection(), '79958932523', 58937)) # Прооверка авторизации пользователя
 

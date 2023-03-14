@@ -60,8 +60,9 @@ def url_filling_profile():
         name_surname = request.form["name_surname"]
         d_birth = request.form["d_birth"]
         city = request.form["city"]
+        photo = request.form["photo"]
 
-        result = filling_profile(create_connection(), users_id, username, name_surname, d_birth, city)
+        result = filling_profile(create_connection(), users_id, username, name_surname, d_birth, city, photo)
 
         if result[0] == 'successful':
             return jsonify({"answer": "successful"})
