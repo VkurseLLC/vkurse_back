@@ -3,6 +3,8 @@ import hashlib
 from Cryptodome.Cipher import AES
 import os
 from Cryptodome.Random import get_random_bytes
+import datetime
+from datetime import date
 
 crypto_key = "Y3V1ba3FWwnd6u0O3ReoGzqNMBfBrw3DNIXOGfHJozlxyMwn2MSiK4TCJqAPgOn1" # Random 512-bit key
 
@@ -46,14 +48,54 @@ def decrypt(enc_dict, password):
 
     return decrypted
 
+
+def str_to_dict(value):
+    value = value.replace('{', '')
+    value = value.replace('}', '')
+    value = value.replace(':', '')
+    value = value.replace(',', '')
+    value = value.replace("'", '')
+
+    keys_val = []
+    for elements in value.split():
+        keys_val.append(elements)
+
+    new_dict= {}
+    for i in range(len(keys_val)-1):
+        if keys_val[i] == 'cipher_text':
+            new_dict.setdefault(keys_val[i], keys_val[i+1])
+        elif keys_val[i] == 'salt':
+            new_dict.setdefault(keys_val[i], keys_val[i+1])
+        elif keys_val[i] == 'nonce':
+            new_dict.setdefault(keys_val[i], keys_val[i+1])
+        elif keys_val[i] == 'tag':
+            new_dict.setdefault(keys_val[i], keys_val[i+1])
+
+    return new_dict
+
+def age_calc(d_birth):
+    day = int(d_birth[8:])
+    month = int(d_birth[5:7])
+    year = int(d_birth[:4])
+    today = date.today()
+    return today.year - year - ((today.month, today.day) < (month, day))
+
+
 #-------------TEST ENCODE AND DECODE----------------------------------#
 
 # enc_res = encrypt(str(9958932523), crypto_key)
 # print(enc_res)
-# enc_res1 = encrypt(str(9958932523), crypto_key)
-# print(enc_res1)
+# # enc_res1 = encrypt(str(9958932523), crypto_key)
+# # print(enc_res1)
 # decrypt_res = decrypt(enc_res, crypto_key)
-# decrypt_res1 = decrypt(enc_res1, crypto_key)
+# # decrypt_res1 = decrypt(enc_res1, crypto_key)
 
 # print(bytes.decode(decrypt_res))
 # print(bytes.decode(decrypt_res1))
+# str_to_dict(str({'cipher_text': 'dyrTyQyRtFGQjXbY', 'salt': '18zvr2CAGanUVrd4wrRKOw==', 'nonce': 'QK9nJpGDBWitrdII5DLytQ==', 'tag': '7yg770Bnmbk6199b2zxPTg=='}))
+
+# def calculate_age(born):
+#     today = datetime.today()
+#     return today.year - born.year - ((today.month, today.day) < (born.month, born.day))
+
+# print(calculate_age(2003-07-03))

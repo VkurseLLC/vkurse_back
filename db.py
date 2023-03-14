@@ -4,6 +4,7 @@ from bot_config import *
 import hashlib
 from encode_decode import *
 import datetime
+from datetime import date
 
 # ---------------------------------------------------------------------------------- #
 
@@ -27,21 +28,22 @@ def create_connection():
 
 # ---------------------------------------------------------------------------------- #
 
-def user_authorisation(connection, phome_number_value, verification_code_value):
+def user_authorisation(connection, phone_number_value, verification_code_value):
     with connection.cursor() as cursor:
         try:
 
-            phome_number_value = phome_number_value.replace('+','')
-            phome_number_value = phome_number_value.replace('(','')
-            phome_number_value = phome_number_value.replace(')','')
-            phome_number_value = phome_number_value.replace('-','')
-            phome_number_value = phome_number_value.replace(' ','')
+            phone_number_value = phone_number_value.replace('+','')
+            phone_number_value = phone_number_value.replace('(','')
+            phone_number_value = phone_number_value.replace(')','')
+            phone_number_value = phone_number_value.replace('-','')
+            phone_number_value = phone_number_value.replace(' ','')
 
-            phome_number_value  = (hashlib.sha256(repr(phome_number_value).encode())).hexdigest()
+            phone_number_value  = (hashlib.sha256(repr(phone_number_value).encode())).hexdigest()
+            phone_number_value_encode = encrypt(repr(phone_number_value), crypto_key)
             verification_code_value  = (hashlib.sha256(repr(int(verification_code_value)).encode())).hexdigest()
 
             cursor.execute("SELECT `id` FROM `phone_number_verification_codes` WHERE `phone_number` = %s AND verification_code = %s AND TIMEDIFF (NOW(), `dt_create`) <= '00:03:00' AND `used` = 0",
-                            (str(phome_number_value), str(verification_code_value)))
+                            (str(phone_number_value), str(verification_code_value)))
             result = cursor.fetchall()
             print(f'result: {result}')
             
@@ -50,7 +52,7 @@ def user_authorisation(connection, phome_number_value, verification_code_value):
                 cursor.execute("UPDATE `phone_number_verification_codes` SET `used` = 1 WHERE `id` = %s", (str(result[0][0]),))
                 connection.commit()
 
-                cursor.execute("SELECT `id` FROM `users` WHERE `phone_number` = %s", (str(phome_number_value),))
+                cursor.execute("SELECT `id` FROM `users` WHERE `phone_number` = %s", (str(phone_number_value),))
                 result = cursor.fetchall()
 
                 if len(result) != 0:
@@ -65,10 +67,12 @@ def user_authorisation(connection, phome_number_value, verification_code_value):
                         return ['successful', result[0][0], 'new_user']
                 
                 else:
-                    cursor.executemany("INSERT INTO users (id, phone_number, dt_reg) VALUES (NULL, %s, NOW())", [(str(phome_number_value), )])
+                    cursor.executemany("INSERT INTO users (id, phone_number, dt_reg) VALUES (NULL, %s, NOW())", [(str(phone_number_value), )])
                     connection.commit()
 
-                    cursor.execute("SELECT `id` FROM `users` WHERE `phone_number` = %s", (str(phome_number_value),))
+                    cursor.executemany("INSERT INTO `users_phone_number` (id, users_id, user_phone_number, dt_upd) VALUES (NULL, %s, %s, NOW())", [(int(result[0][0]), str(phone_number_value_encode))])
+
+                    cursor.execute("SELECT `id` FROM `users` WHERE `phone_number` = %s", (str(phone_number_value),))
                     result = cursor.fetchall()
 
                     cursor.execute("SELECT `id` FROM `users_account_data` WHERE `users_id` = %s", (int(result[0][0]),))
@@ -119,13 +123,14 @@ def check_username_availability(connection, username_value):
                 bot.send_message(chat_id, f"Произошла ошибка в check_username_availability\n\n{e}")
                 return ['error']
         
-def filling_profile(connection, users_id, username, first_name, d_birth, city):
+def filling_profile(connection, users_id, username, name_surname, d_birth, city):
     with connection.cursor() as cursor:
 
         try:
+
             check_username = check_username_availability(create_connection(), username)
-            # users_id = get_user_id(create_connection(), )
-            first_name = encrypt(repr(first_name), crypto_key)
+            name_surname = encrypt(repr(name_surname), crypto_key)
+            # surname = encrypt(repr(surname), crypto_key)
             d_birth = encrypt(repr(d_birth), crypto_key) 
             
 
@@ -136,8 +141,10 @@ def filling_profile(connection, users_id, username, first_name, d_birth, city):
 
                 cursor.executemany("INSERT INTO `users_username` (`id`, `users_id`, `username`, `dt_upd`) VALUES (NULL, %s, %s, NOW())", [(int(users_id), str(username),)])
 
-                cursor.executemany("INSERT INTO `users_account_data` (`id`, `users_id`, `first_name`, `d_birth`, `dt_upd`) VALUES (NULL, %s, %s, %s, NOW())",
-                                    [(str(users_id), str(first_name), str(d_birth),)])
+                cursor.executemany("INSERT INTO `users_account_data` (`id`, `users_id`, `name_surname`, `d_birth`, `dt_upd`) VALUES (NULL, %s, %s, %s, NOW())",
+                                    [(int(users_id), str(name_surname), str(d_birth),)])
+                
+                # cursor.executemany("INSERT INTO `users_surname` (`id`, `users_id`, `user_surname`, `dt_upd`) VALUES (NULL, %s, %s)", [(int(users_id), str(surname),)])
 
                 cursor.executemany("INSERT INTO `users_city` (`id`, `users_id`, `cities_id`, `dt_upd`) VALUES (NULL, %s, %s, NOW())", [(int(users_id), int(city_id),)])
 
@@ -169,8 +176,57 @@ def city_selection(connection):
                 print(f"Произошла ошибка city_selection: {e}")
                 bot.send_message(chat_id, f"Произошла ошибка в city_selection\n\n{e}")
                 return ['error']
+        
+def user_profile(connection, user_id):
+    with connection.cursor() as cursor:
+        try:
+            cursor.execute("SELECT `name_surname` FROM `users_account_data` WHERE `users_id` = %s ORDER BY `dt_upd` DESC", (int(user_id),))
+            result = cursor.fetchall()
+            name_surname = bytes.decode(decrypt(str_to_dict(result[0][0]), crypto_key)).replace("'",'')
+            # print(name_surname)
+            cursor.execute("SELECT `d_birth` FROM `users_account_data` WHERE `users_id` = %s ORDER BY `dt_upd` DESC", (int(user_id),))
+            result = cursor.fetchall()
+            d_birth = bytes.decode(decrypt(str_to_dict(result[0][0]), crypto_key)).replace("'",'')
+            age = age_calc(d_birth)
+            # print(age)
+            cursor.execute("SELECT `cities_id` FROM `users_city` WHERE `users_id` = %s ORDER BY `dt_upd` DESC", (int(user_id),))
+            result = cursor.fetchall()
+            cursor.execute("SELECT `city_name` FROM `cities` WHERE `id` = %s", (int(result[0][0]),))
+            result = cursor.fetchall()
+            city = result[0][0]
+            # print(city)
+            cursor.execute("SELECT `user_phone_number` FROM `users_phone_number` WHERE `id` = %s", (int(user_id),))
+            result = cursor.fetchall()
+            phone_number = bytes.decode(decrypt(str_to_dict(result[0][0]), crypto_key)).replace("'",'')
+            # print('+7'+ phone_number)
+            cursor.execute("SELECT `username` FROM `users_username` WHERE `users_id` = %s ORDER BY `dt_upd` DESC", (int(user_id),))
+            result = cursor.fetchall()
+            username = result[0][0]
+            # print(username)
+            cursor.execute("SELECT `user_about` FROM `users_about` WHERE `users_id` = %s ORDER BY `dt_upd` DESC", (int(user_id),))
+            result = cursor.fetchall()
+            about = result[0][0]
+            # print(about)
 
-# ---------------------------------------------------------------------------------- #
+            return [name_surname, str(age), city, '+7'+ phone_number, username, about]
+        except Error as e:
+                print(f"Произошла ошибка user_profile: {e}")
+                bot.send_message(chat_id, f"Произошла ошибка в user_profile\n\n{e}")
+                return ['error']
+        
+def add_about(connection, users_id, about):
+    with connection.cursor() as cursor:
+        try:
+            cursor.executemany("INSERT INTO `users_about` (`id`, `users_id`, `user_about`, `dt_upd`) VALUES (NULL, %s, %s, NOW())", [(int(users_id), str(about),)])
+            connection.commit()
+
+            return ['successful']
+        
+        except Error as e:
+                print(f"Произошла ошибка add_about: {e}")
+                bot.send_message(chat_id, f"Произошла ошибка в add_about\n\n{e}")
+                return ['error']
+# # ---------------------------------------------------------------------------------- #
 
 def template(connection):
     with connection.cursor() as cursor:
@@ -182,6 +238,9 @@ def template(connection):
                 bot.send_message(chat_id, f"Произошла ошибка в template\n\n{e}")
                 return ['error']
 
+
+# ("SELECT FROM WHERE ORDER BY `dt_upd` DESC", (,))
+# ("INSERT INTO () VALUES ()"", [(,)])
 # ---------------------------------------------------------------------------------- #
 
 
@@ -191,13 +250,15 @@ def template(connection):
 
 # print(user_authorisation(create_connection(), '+7 (928) 753-90-56', 97173))
 
-# print(filling_profile(create_connection(), "2", "seemyownnn", "Semyon", "2003-07-03", "Ростов-на-Дону")) # Заполнение профиля
+# print(filling_profile(create_connection(), "2", "seemyown2", "Семён Альбеев", "2003-07-03", "Ростов-на-Дону")) # Заполнение профиля
 
-# print(user_authorisation(create_connection(), '79958932523', 80640)) # Прооверка авторизации пользователя
+# print(user_authorisation(create_connection(), '79958932523', 58937)) # Прооверка авторизации пользователя
 
 # city_selection(create_connection())
 
 # print(check_username_availability(create_connection(), "seemyownn"))
 
 # print(get_user_id(create_connection(), "79958932523"))
-# print()
+# print(user_profile(create_connection(), "2"))
+
+# print(add_about(create_connection(), 2, "Обо мне"))
