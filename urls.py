@@ -112,17 +112,11 @@ def url_user_profile():
     else:
         return jsonify({"answer: error"})
 
-@application.route('/api/location', methods=["GET", "POST"])
-def url_users_location():
-
-    if request.method == "GET":
-        user_id = request.form["user_id"]
-
-        result = get_users_location(create_connection(), user_id)
-        return jsonify({"answer": "successful",
-                        "locations_data": result})
+# Отправка геолокации
+@application.route('/api/save/location', methods=["GET", "POST"])
+def url_save_users_location():
     
-    elif request.method == "POST":
+    if request.method == "POST":
         user_id = request.form["user_id"]
         latitude = request.form["latitude"]
         longitude = request.form["longitude"]
@@ -130,6 +124,20 @@ def url_users_location():
         result = save_user_location(create_connection(), user_id, latitude, longitude)
 
         return result
+
+    else:
+        return jsonify({"answer": "error"})
+
+# Получение геолокации других пользователей
+@application.route('/api/stream/location', methods=["GET", "POST"])
+def url_stream_users_location():
+
+    if request.method == "POST":
+        user_id = request.form["user_id"]
+
+        result = get_users_location(create_connection(), user_id)
+        return jsonify({"answer": "successful",
+                        "locations_data": result})
 
     else:
         return jsonify({"answer": "error"})
