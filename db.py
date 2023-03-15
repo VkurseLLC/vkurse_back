@@ -3,8 +3,8 @@ from mysql.connector import Error
 from bot_config import *
 import hashlib
 from encode_decode import *
-import datetime
-from datetime import date
+# import datetime
+# from datetime import date
 
 # ---------------------------------------------------------------------------------- #
 
@@ -236,6 +236,59 @@ def add_about(connection, users_id, about):
                 print(f"Произошла ошибка add_about: {e}")
                 bot.send_message(chat_id, f"Произошла ошибка в add_about\n\n{e}")
                 return ['error']
+
+def save_user_location(connection, user_id, latitude, longitude):
+    with connection.cursor() as cursor:
+        try:
+            cursor.executemany("INSERT INTO `users_location` (`id`, `users_id`, `latitude`, `longitude`, `dt_upd`) VALUES (NULL, %s, %s, %s, NOW())", [(int(user_id), float(latitude), float(longitude))])
+            connection.commit()
+            connection.close()
+
+            return {"answer": "successful"}
+        
+        except Error as e:
+                connection.rollback()
+                connection.close()
+                print(f"Произошла ошибка template: {e}")
+                bot.send_message(chat_id, f"Произошла ошибка в save_user_location\n\n{e}")
+                return {"answer": "error"}
+
+def get_users_location(connection, user_id):
+     with connection.cursor() as cursor:
+        try:
+            output_data = []
+
+            cursor.execute("SELECT `latitude`, `longitude` FROM `users_location` WHERE `users_id` = %s ORDER BY `dt_upd` DESC", (int(user_id),))                     
+            user_location = cursor.fetchall()
+
+            if len(user_location) != 0:
+                output_data.append({"type": "user_location", 
+                                    "user_id": int(user_id),
+                                    "latitude": user_location[0][0],
+                                    "longitude": user_location[0][1]})
+
+            cursor.execute("SELECT `friend_users_id` FROM `users_friends` WHERE `users_id` = %s AND `status` = 0 ORDER BY `dt_rec` DESC", (int(user_id),))
+            list_friend = cursor.fetchall()
+
+            if len(list_friend) != 0:
+                for friend in list_friend:
+                    cursor.execute("SELECT `latitude`, `longitude` FROM `users_location` WHERE `users_id` = %s ORDER BY `dt_upd` DESC", (int(friend[0]),))                     
+                    friend_location = cursor.fetchall()
+
+                    if len(friend_location) != 0:
+                        output_data.append({"type": "friend_location", 
+                                            "user_id": friend[0],
+                                            "latitude": friend_location[0][0],
+                                            "longitude": friend_location[0][1]})
+
+            return output_data
+
+        except Error as e:
+                print(f"Произошла ошибка template: {e}")
+                bot.send_message(chat_id, f"Произошла ошибка в get_user_location\n\n{e}")
+                return {"answer": "error"}
+
+
 # # ---------------------------------------------------------------------------------- #
 
 def template(connection):
@@ -260,7 +313,7 @@ def template(connection):
 
 # print(user_authorisation(create_connection(), '+7 (928) 753-90-56', 97173))
 
-print(filling_profile(create_connection(), "2", "seemyown3", "Семён Альбеев", "2003-07-03", "Ростов-на-Дону", None)) # Заполнение профиля
+# print(filling_profile(create_connection(), "2", "seemyown3", "Семён Альбеев", "2003-07-03", "Ростов-на-Дону", None)) # Заполнение профиля
 
 # print(user_authorisation(create_connection(), '79958932523', 58937)) # Прооверка авторизации пользователя
 

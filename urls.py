@@ -112,5 +112,24 @@ def url_user_profile():
     else:
         return jsonify({"answer: error"})
 
+@application.route('/api/location', methods=["GET", "POST"])
+def url_users_location():
 
+    if request.method == "GET":
+        user_id = request.form["user_id"]
 
+        result = get_users_location(create_connection(), user_id)
+        return jsonify({"answer": "successful",
+                        "locations_data": result})
+    
+    elif request.method == "POST":
+        user_id = request.form["user_id"]
+        latitude = request.form["latitude"]
+        longitude = request.form["longitude"]
+
+        result = save_user_location(create_connection(), user_id, latitude, longitude)
+
+        return result
+
+    else:
+        return jsonify({"answer": "error"})
