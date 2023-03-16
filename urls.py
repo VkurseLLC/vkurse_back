@@ -74,7 +74,7 @@ def url_filling_profile():
             return jsonify({"answer": "error"})
         
 @application.route('/add_about', methods=["GET", "POST"])
-def save_about():
+def url_add_about():
 
     if request.method == "POST":
         users_id = request.form["users_id"]
@@ -94,10 +94,10 @@ def url_city_selection():
     if request.method == "GET":
         result = city_selection(create_connection())
 
-        return result# jsonify({f"answer: {result[0]}"})
+        return jsonify({"answer": f"{result}"})
     
     else:
-        return jsonify({"answer: error"})
+        return jsonify({"answer": "error"})
 
 @application.route('/user_profile', methods=["GET", "POST"])
 def url_user_profile():
@@ -110,7 +110,11 @@ def url_user_profile():
         return result
     
     else:
-        return jsonify({"answer: error"})
+        return jsonify({"answer": "error"})
 
+# @application.route('/save_photo', methods=["GET", "POST"])
+# def url_take_photo():
 
+#     if request.method == "GET":
+        
 
