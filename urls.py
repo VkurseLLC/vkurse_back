@@ -8,6 +8,7 @@ application = Flask(__name__)
 def hello():
    return "<h1>Hello!</h1>"
 
+# Авторизация пользователя
 @application.route('/authorisation', methods=["GET", "POST"])
 def url_authorisation():
 
@@ -30,6 +31,7 @@ def url_authorisation():
         else:
             return jsonify({"answer": "error"})
         
+# Проверка username
 @application.route('/check_username_availability', methods=["GET", "POST"])
 def url_check_username_availability():
 
@@ -50,6 +52,7 @@ def url_check_username_availability():
         else:
             return jsonify({"answer": "error"})
         
+# Заполнение профиля данными пользователя
 @application.route('/filling_profile', methods=["GET", "POST"])
 def url_filling_profile():
 
@@ -73,6 +76,7 @@ def url_filling_profile():
         else:
             return jsonify({"answer": "error"})
         
+# Добавление данных из поля "Обо мне"        
 @application.route('/add_about', methods=["GET", "POST"])
 def url_add_about():
 
@@ -88,6 +92,7 @@ def url_add_about():
         else:
             return jsonify({"answer": "error"})
         
+# Выбор города        
 @application.route('/city_selection', methods=["GET", "POST"])
 def url_city_selection():
 
@@ -99,6 +104,7 @@ def url_city_selection():
     else:
         return jsonify({"answer": "error"})
 
+# Вывод данных пользователя на экран профиля
 @application.route('/user_profile', methods=["GET", "POST"])
 def url_user_profile():
 
@@ -111,9 +117,13 @@ def url_user_profile():
     
     else:
         return jsonify({"answer": "error"})
-
+    
+# Сохранение фото
 # @application.route('/save_photo', methods=["GET", "POST"])
-# def url_take_photo():
+# def url_save_photo():
+
+#     if request.method == "POST":
+
 
 # Отправка геолокации
 @application.route('/api/save/location', methods=["GET", "POST"])

@@ -124,7 +124,7 @@ def check_username_availability(connection, username_value):
                 bot.send_message(chat_id, f"Произошла ошибка в check_username_availability\n\n{e}")
                 return ['error']
         
-def filling_profile(connection, users_id, username, name_surname, d_birth, city, user_avatar):
+def filling_profile(connection, users_id, username, name_surname, d_birth, city):
     with connection.cursor() as cursor:
 
         try:
@@ -133,7 +133,7 @@ def filling_profile(connection, users_id, username, name_surname, d_birth, city,
             name_surname = encrypt(repr(name_surname), crypto_key)
             # surname = encrypt(repr(surname), crypto_key)
             d_birth = encrypt(repr(d_birth), crypto_key) 
-            user_avatar = convert_to_binary_data(user_avatar)
+            # user_avatar = convert_to_binary_data(user_avatar)
 
             cursor.execute("SELECT `id` FROM `cities` WHERE `city_name` = %s", (str(city),))
             city_id = cursor.fetchall()[0][0]
@@ -149,7 +149,7 @@ def filling_profile(connection, users_id, username, name_surname, d_birth, city,
 
                 cursor.executemany("INSERT INTO `users_city` (`id`, `users_id`, `cities_id`, `dt_upd`) VALUES (NULL, %s, %s, NOW())", [(int(users_id), int(city_id),)])
 
-                cursor.executemany("INSERT INTO `users_photo` (`id`, `users_id`, `user_avatar`, `dt_upd`) VALUES (NULL, %s , %s, NOW())", [(int(users_id), user_avatar)])
+                # cursor.executemany("INSERT INTO `users_photo` (`id`, `users_id`, `user_avatar`, `dt_upd`) VALUES (NULL, %s , %s, NOW())", [(int(users_id), user_avatar)])
 
                 
                 connection.commit()
@@ -214,9 +214,9 @@ def user_profile(connection, user_id):
             cursor.execute("SELECT `user_avatar` FROM `users_photo` WHERE `users_id` = %s ORDER BY `dt_upd` DESC", (int(user_id),))
             result = cursor.fetchall()
             photo = convert_to_image(result)
-            print(photo)
+            # print(photo)
 
-            return [name_surname, str(age), city, '+7'+ phone_number, username, about, photo]
+            return {"name_surname": f"{name_surname}", "age":f"{str(age)}", "city":f"{city}", "phone_number":f"{phone_number}", "username":f"{username}", "about":f"{about}"}
         except Error as e:
                 print(f"Произошла ошибка user_profile: {e}")
                 bot.send_message(chat_id, f"Произошла ошибка в user_profile\n\n{e}")
@@ -320,6 +320,7 @@ def template(connection):
 # print(check_username_availability(create_connection(), "seemyownn"))
 
 # print(get_user_id(create_connection(), "79958932523"))
+
 print(user_profile(create_connection(), "2"))
 
 # print(add_about(create_connection(), 2, "Обо мне"))
