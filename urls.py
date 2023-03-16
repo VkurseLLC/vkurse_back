@@ -94,7 +94,7 @@ def url_city_selection():
     if request.method == "GET":
         result = city_selection(create_connection())
 
-        return jsonify({"answer": f"{result}"})
+        return result
     
     else:
         return jsonify({"answer": "error"})
