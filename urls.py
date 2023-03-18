@@ -53,7 +53,7 @@ def url_check_username_availability():
             return jsonify({"answer": "error"})
         
 # Заполнение профиля данными пользователя
-@application.route('/filling_profile', methods=["GET", "POST"])
+@application.route('/api/user_profile/filling_profile', methods=["GET", "POST"])
 def url_filling_profile():
 
     if request.method == "POST":
@@ -63,9 +63,9 @@ def url_filling_profile():
         name_surname = request.form["name_surname"]
         d_birth = request.form["d_birth"]
         city = request.form["city"]
-        photo = request.form["photo"]
+        
 
-        result = filling_profile(create_connection(), users_id, username, name_surname, d_birth, city, photo)
+        result = filling_profile(create_connection(), users_id, username, name_surname, d_birth, city)
 
         if result[0] == 'successful':
             return jsonify({"answer": "successful"})
@@ -77,7 +77,7 @@ def url_filling_profile():
             return jsonify({"answer": "error"})
         
 # Добавление данных из поля "Обо мне"        
-@application.route('/add_about', methods=["GET", "POST"])
+@application.route('/api/user_profile/add_about', methods=["GET", "POST"])
 def url_add_about():
 
     if request.method == "POST":
@@ -99,14 +99,14 @@ def url_city_selection():
     if request.method == "GET":
         result = city_selection(create_connection())
 
-        return result
+        return result 
     
     else:
         return jsonify({"answer": "error"})
 
 # Вывод данных пользователя на экран профиля
-@application.route('/user_profile', methods=["GET", "POST"])
-def url_user_profile():
+@application.route('/api/user_profile/show_profile', methods=["GET", "POST"])
+def url_show_profile():
 
     if request.method == "GET":
         users_id = request.form["users_id"]
@@ -119,11 +119,37 @@ def url_user_profile():
         return jsonify({"answer": "error"})
     
 # Сохранение фото
-# @application.route('/save_photo', methods=["GET", "POST"])
-# def url_save_photo():
+@application.route('/api/user_profile/image/add_image', methods=["GET", "POST"])
+def url_add_image():
 
-#     if request.method == "POST":
+    if request.method == "POST":
 
+        users_id = request.form["users_id"]
+        bin_photo = request.form["photo"]
+
+        result = add_image(create_connection(), users_id, bin_photo)
+
+        if result[0] == 'successful':
+            return jsonify({"answer": "image_was_upload"})
+
+        else:
+            return jsonify({"answer": "error"})
+#    
+
+@application.route('/api/user_profile/image/delete_image', methods=["GET", "POST"])
+def url_delete_image():
+
+    if request.method == "POST":
+
+        users_id = request.form["users_id"]
+
+        result = delete_image(create_connection(), users_id)
+
+        if result[0] == 'successful':
+            return jsonify({"answer": "image_was_deleted"})
+
+        else:
+            return jsonify({"answer": "error"})
 
 # Отправка геолокации
 @application.route('/api/save/location', methods=["GET", "POST"])

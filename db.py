@@ -140,16 +140,18 @@ def filling_profile(connection, users_id, username, name_surname, d_birth, city)
 
             if check_username[0] == 'True':
 
-                cursor.executemany("INSERT INTO `users_username` (`id`, `users_id`, `username`, `dt_upd`) VALUES (NULL, %s, %s, NOW())", [(int(users_id), str(username),)])
+                cursor.executemany("INSERT INTO `users_username` (`id`, `users_id`, `username`, `dt_upd`) VALUES (NULL, %s, %s, NOW())", 
+                                   [(int(users_id), str(username),)])
 
                 cursor.executemany("INSERT INTO `users_account_data` (`id`, `users_id`, `name_surname`, `d_birth`, `dt_upd`) VALUES (NULL, %s, %s, %s, NOW())",
                                     [(int(users_id), str(name_surname), str(d_birth),)])
                 
                 # cursor.executemany("INSERT INTO `users_surname` (`id`, `users_id`, `user_surname`, `dt_upd`) VALUES (NULL, %s, %s)", [(int(users_id), str(surname),)])
 
-                cursor.executemany("INSERT INTO `users_city` (`id`, `users_id`, `cities_id`, `dt_upd`) VALUES (NULL, %s, %s, NOW())", [(int(users_id), int(city_id),)])
+                cursor.executemany("INSERT INTO `users_city` (`id`, `users_id`, `cities_id`, `dt_upd`) VALUES (NULL, %s, %s, NOW())", 
+                                   [(int(users_id), int(city_id),)])
 
-                # cursor.executemany("INSERT INTO `users_photo` (`id`, `users_id`, `user_avatar`, `dt_upd`) VALUES (NULL, %s , %s, NOW())", [(int(users_id), user_avatar)])
+                # cursor.executemany("INSERT INTO `users_photo` (`id`, `users_id`, `user_avatar`, `dt_upd`) VALUES (NULL, %s , %s, NOW())", [(int(users_id), user_avatar_bin)])
 
                 
                 connection.commit()
@@ -163,6 +165,37 @@ def filling_profile(connection, users_id, username, name_surname, d_birth, city)
         except Error as e:
                 print(f"Произошла ошибка filling_profile: {e}")
                 bot.send_message(chat_id, f"Произошла ошибка в filling_profile\n\n{e}")
+                return ['error']
+        
+def add_image(connection, users_id, user_bin_image):
+     with connection.cursor() as cursor:
+        try:
+            cursor.executemany("INSERT INTO `users_photo` (`id`, `users_id`, `user_avatar`, `dt_upd`) VALUES (NULL, %s , %s, NOW())", 
+                               [(int(users_id), user_bin_image,)])
+            connection.commit()
+
+            return ['successful']
+        
+        except Error as e:
+                print(f"Произошла ошибка add_image: {e}")
+                bot.send_message(chat_id, f"Произошла ошибка в add_image\n\n{e}")
+                return ['error']
+        
+def delete_image(connection, users_id):
+     with connection.cursor() as cursor:
+        try:
+            cursor.execute("SELECT `defaul_image FROM `users_default_image` WHERE `id`= 1")
+            result = cursor.fetchall()
+
+            cursor.executemany("INSERT INTO `users_photo` (`id`, `users_id`, `user_avatar`, `dt_upd`) VALUES (NULL, %s , %s, NOW())",
+                                [(int(users_id), result[0][0],)])
+            connection.commit()
+
+            return ['successful']
+        
+        except Error as e:
+                print(f"Произошла ошибка delete_image: {e}")
+                bot.send_message(chat_id, f"Произошла ошибка в delete_image\n\n{e}")
                 return ['error']
         
 def city_selection(connection):
@@ -213,10 +246,17 @@ def user_profile(connection, user_id):
             # print(about)
             cursor.execute("SELECT `user_avatar` FROM `users_photo` WHERE `users_id` = %s ORDER BY `dt_upd` DESC", (int(user_id),))
             result = cursor.fetchall()
-            photo = convert_to_image(result)
+
+            if len(result) == 0:
+                default_avatar = 'img\profile_photo.jpg'
+                photo = convert_to_binary_data(default_avatar)
+
+            else:
+                photo = result[0][0]
+
             # print(photo)
 
-            return {"name_surname": f"{name_surname}", "age":f"{str(age)}", "city":f"{city}", "phone_number":f"{phone_number}", "username":f"{username}", "about":f"{about}"}
+            return {"name_surname": f"{name_surname}", "age":f"{str(age)}", "city":f"{city}", "phone_number":f"{phone_number}", "username":f"{username}", "about":f"{about}", "avatar":f"{photo}"}
         except Error as e:
                 print(f"Произошла ошибка user_profile: {e}")
                 bot.send_message(chat_id, f"Произошла ошибка в user_profile\n\n{e}")
@@ -299,7 +339,6 @@ def template(connection):
                 bot.send_message(chat_id, f"Произошла ошибка в template\n\n{e}")
                 return ['error']
 
-
 # ("SELECT FROM WHERE ORDER BY `dt_upd` DESC", (,))
 # ("INSERT INTO () VALUES ()"", [(,)])
 # ---------------------------------------------------------------------------------- #
@@ -321,6 +360,6 @@ def template(connection):
 
 # print(get_user_id(create_connection(), "79958932523"))
 
-print(user_profile(create_connection(), "2"))
+# print(user_profile(create_connection(), "2"))
 
 # print(add_about(create_connection(), 2, "Обо мне"))
