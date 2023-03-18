@@ -52,6 +52,18 @@ def url_check_username_availability():
         else:
             return jsonify({"answer": "error"})
         
+# Выбор города        
+@application.route('/city_selection', methods=["GET", "POST"])
+def url_city_selection():
+
+    if request.method == "GET":
+        result = city_selection(create_connection())
+
+        return result 
+    
+    else:
+        return jsonify({"answer": "error"})        
+
 # Заполнение профиля данными пользователя
 @application.route('/api/user_profile/filling_profile', methods=["GET", "POST"])
 def url_filling_profile():
@@ -91,18 +103,6 @@ def url_add_about():
         
         else:
             return jsonify({"answer": "error"})
-        
-# Выбор города        
-@application.route('/city_selection', methods=["GET", "POST"])
-def url_city_selection():
-
-    if request.method == "GET":
-        result = city_selection(create_connection())
-
-        return result 
-    
-    else:
-        return jsonify({"answer": "error"})
 
 # Вывод данных пользователя на экран профиля
 @application.route('/api/user_profile/show_profile', methods=["GET", "POST"])
@@ -134,8 +134,8 @@ def url_add_image():
 
         else:
             return jsonify({"answer": "error"})
-#    
 
+# Удаление фото
 @application.route('/api/user_profile/image/delete_image', methods=["GET", "POST"])
 def url_delete_image():
 
