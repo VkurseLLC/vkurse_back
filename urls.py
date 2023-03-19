@@ -180,3 +180,33 @@ def url_stream_users_location():
 
     else:
         return jsonify({"answer": "error"})
+
+# Сoхранение геометки
+@application.route('/api/user_profile/image/save_geometca', methods=["GET", "POST"])
+def url_save_geometca():
+
+    if request.method == "POST":
+        users_id = request.form["users_id"]
+
+        result = save_icon_geometca(create_connection(), users_id)
+
+        if result[0] == 'metca_was_saved':
+            return jsonify({"answer": f"{result[0]}"}) 
+
+        else:
+            return jsonify({"answer": "error"})
+        
+# Полечение геометки
+@application.route('/api/user_profile/image/get_geometca', methods=["GET", "POST"])
+def url_get_geometca():
+
+    if request.method == "POST":
+        users_id = request.form["users_id"]
+
+        result = get_geometca(create_connection(), users_id)
+
+        if len(result) != 0:
+            return jsonify ({"answer": f"{result}"})
+
+        else:
+            return jsonify({"answer": "error"})

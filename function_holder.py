@@ -1,7 +1,7 @@
 import base64
 import datetime
 from datetime import date
-from PIL import Image
+from PIL import Image, ImageDraw, ImageFilter
 import io
 
 # Преобразователь строки в словать(использовать только для закодированных строк с помощью фукнкции encode() )
@@ -48,5 +48,19 @@ def convert_to_image(data):
     image = data[0][0]
     binary_data = base64.b64decode(image)
     image = Image.open(io.BytesIO(binary_data))
-    return image.show()
+    return image
 #------------------------------------------------------------------------
+# Наложение фотографии профиля на иконку маркера
+def geometca_photo(user_photo):
+    backgroung = Image.open('img\icon_background.png')
+    user_photo = Image.open(user_photo)
+
+    user_photo.thumbnail(size=(384,384))
+    mask_im = Image.new("L", (384,384), 0)
+    draw = ImageDraw.Draw(mask_im)
+    draw.ellipse((40,40,344,344), fill=255)
+    mask_im_blur = mask_im.filter(ImageFilter.GaussianBlur(10))
+
+    backgroung.paste(user_photo, (64, 64), mask_im_blur)
+    return backgroung
+#-------------------------------------------------------------------------

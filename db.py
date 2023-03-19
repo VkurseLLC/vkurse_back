@@ -248,9 +248,9 @@ def user_profile(connection, user_id):
             result = cursor.fetchall()
 
             if len(result) == 0:
-                default_avatar = 'img\profile_photo.jpg'
-                photo = convert_to_binary_data(default_avatar)
-
+                cursor.execute("SELECT `default_image` FROM `users_default_image`")
+                result = cursor.fetchall()
+                photo = result[0][0]
             else:
                 photo = result[0][0]
 
@@ -326,8 +326,39 @@ def get_users_location(connection, user_id):
                 bot.send_message(chat_id, f"Произошла ошибка в get_user_location\n\n{e}")
                 return {"answer": "error"}
 
+def save_icon_geometca(connection, users_id):
+    with connection.cursor() as cursor:
+        try:
+            cursor.execute("SELECT `user_avatar` FROM `users_photo` WHERE `users_id` = %s ORDER BY `dt_upd` DESC", (int(users_id),))
+            result = cursor.fetchall()
+            result = convert_to_image(result).save(f"img\{users_id}.png")
+            geometca = geometca_photo(f"img\{users_id}.png").save(f"img\{users_id}.png")
+            
+            cursor.executemany("INSERT INTO `users_geometca` (id, users_id, geo_metca, dt_upd) VALUES (NULL, %s, %s, NOW())",
+                                [(int(users_id),convert_to_binary_data(f"img\{users_id}.png"),)])
+            connection.commit()
 
-# # ---------------------------------------------------------------------------------- #
+            return ['metca_was_saved']
+        
+        except Error as e:
+                print(f"Произошла ошибка geo_metca: {e}")
+                bot.send_message(chat_id, f"Произошла ошибка в geo_metca\n\n{e}")
+                return ['error']
+        
+def get_geometca(connection,users_id):
+    with connection.cursor() as cursor:
+        try:
+            cursor.execute("SELECT `geo_metca` FROM `users_geometca` WHERE `users_id` = %s ORDER BY `dt_upd` DESC",
+                            (int(users_id),))
+            result = cursor.fetchall()
+            geo_metca = result[0][0]
+            return geo_metca
+
+        except Error as e:
+                print(f"Произошла ошибка get_geometca: {e}")
+                bot.send_message(chat_id, f"Произошла ошибка в get_geometca\n\n{e}")
+                return ['error']
+# ---------------------------------------------------------------------------------- #
 
 def template(connection):
     with connection.cursor() as cursor:
@@ -363,3 +394,6 @@ def template(connection):
 # print(user_profile(create_connection(), "2"))
 
 # print(add_about(create_connection(), 2, "Обо мне"))
+
+# print(add_image(create_connection(), 2, convert_to_binary_data('img\profile_photo.jpg')))
+# print(get_geometca(create_connection(), 2))
