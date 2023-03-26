@@ -108,7 +108,7 @@ def url_add_about():
 @application.route('/api/user_profile/show_profile', methods=["GET", "POST"])
 def url_show_profile():
 
-    if request.method == "GET":
+    if request.method == "POST":
         users_id = request.form["users_id"]
 
         result = user_profile(create_connection(), users_id)
