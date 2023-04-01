@@ -72,10 +72,12 @@ def url_filling_profile():
 
         users_id = request.form["users_id"]
         username = request.form["username"]
-        name_surname = request.form["name_surname"]
+        name = request.form["name"]
+        surname = request.form["surname"]
         d_birth = request.form["d_birth"]
         city = request.form["city"]
-        
+
+        name_surname = name + ' '+ surname 
 
         result = filling_profile(create_connection(), users_id, username, name_surname, d_birth, city)
 
@@ -117,7 +119,19 @@ def url_show_profile():
     
     else:
         return jsonify({"answer": "error"})
-    
+
+@application.route('/api/user_profile/image/show_image', methods=["GET", "POST"])
+def url_show_image():
+
+    if request.method == "GET":
+        # users_id = request.form["users_id"]
+
+        answer = show_photo(create_connection(), 2)
+
+        return answer
+
+    else: 
+        return jsonify({"answer": "error"})
 # Сохранение фото
 @application.route('/api/user_profile/image/add_image', methods=["GET", "POST"])
 def url_add_image():

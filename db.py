@@ -220,6 +220,8 @@ def user_profile(connection, user_id):
             cursor.execute("SELECT `name_surname` FROM `users_account_data` WHERE `users_id` = %s ORDER BY `dt_upd` DESC", (int(user_id),))
             result = cursor.fetchall()
             name_surname = bytes.decode(decrypt(str_to_dict(result[0][0]), crypto_key)).replace("'",'')
+            name = name_surname.split()[0]
+            surname = name_surname.split()[1]
             # print(name_surname)
             cursor.execute("SELECT `d_birth` FROM `users_account_data` WHERE `users_id` = %s ORDER BY `dt_upd` DESC", (int(user_id),))
             result = cursor.fetchall()
@@ -256,7 +258,7 @@ def user_profile(connection, user_id):
 
             # print(photo)
 
-            return {"name_surname": f"{name_surname}", "age":f"{str(age)}", "city":f"{city}", "phone_number":f"{phone_number}", "username":f"{username}", "about":f"{about}", "avatar":f"{photo}"}
+            return {"name": f"{name}","surname": f"{surname}", "age":f"{str(age)}", "city":f"{city}", "phone_number":f"{phone_number}", "username":f"{username}", "about":f"{about}", "avatar":f"{photo}"}
         except Error as e:
                 print(f"Произошла ошибка user_profile: {e}")
                 bot.send_message(chat_id, f"Произошла ошибка в user_profile\n\n{e}")
@@ -380,6 +382,19 @@ def get_geometca(connection,users_id):
                 bot.send_message(chat_id, f"Произошла ошибка в get_geometca\n\n{e}")
                 return ['error']
 # ---------------------------------------------------------------------------------- #
+def show_photo(connection, user_id):
+    with connection.cursor() as cursor:
+        try:
+            
+            cursor.execute("SELECT `user_avatar` FROM `users_photo` WHERE `users_id` = %s ORDER BY `dt_upd` DESC", (int(user_id),))
+            result = cursor.fetchall()
+
+            return {"avatar": f"{result[0][0]}"}
+        
+        except Error as e:
+                print(f"Произошла ошибка template: {e}")
+                bot.send_message(chat_id, f"Произошла ошибка в template\n\n{e}")
+                return ['error']
 
 def template(connection):
     with connection.cursor() as cursor:
@@ -421,3 +436,5 @@ def template(connection):
 # print(get_geometca(create_connection(), 2))
 
 # print(get_users_location(create_connection(), 2))
+
+# print(show_photo(create_connection(), 2))
