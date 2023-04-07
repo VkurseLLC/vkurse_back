@@ -79,7 +79,7 @@ def url_filling_profile():
         d_birth = request.form["d_birth"]
         city = request.form["city"]
 
-        name_surname = name + ' '+ surname 
+        name_surname = name + ' ' + surname 
 
         result = filling_profile(create_connection(), users_id, username, name_surname, d_birth, city)
 

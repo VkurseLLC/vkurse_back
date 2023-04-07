@@ -66,11 +66,11 @@ def user_authorisation(connection, phone_number_value, verification_code_value):
                     cursor.execute("SELECT `id` FROM `users_account_data` WHERE `users_id` = %s", (int(result[0][0]),))
                     user_account_status = cursor.fetchall()
 
-                    if len(user_account_status) != 0:
-                        return ['successful', result[0][0], 'old_user']
+                    if len(user_account_status) == 0:
+                        return ['successful', result[0][0], 'new_user']
                     
                     else:
-                        return ['successful', result[0][0], 'new_user']
+                        return ['successful', result[0][0], 'old_user']
                 
                 else:
                     cursor.executemany("INSERT INTO users (id, phone_number, dt_reg) VALUES (NULL, %s, NOW())", [(str(phone_number_value), )])
@@ -84,13 +84,11 @@ def user_authorisation(connection, phone_number_value, verification_code_value):
                     cursor.execute("SELECT `id` FROM `users_account_data` WHERE `users_id` = %s", (int(result[0][0]),))
                     user_account_status = cursor.fetchall()
 
-                    if len(user_account_status) != 0:
-
-                        return ['successful', result[0][0], 'old_user']
+                    if len(user_account_status) == 0:
+                        return ['successful', result[0][0], 'new_user']
                     
                     else:
-
-                        return ['successful', result[0][0], 'new_user']
+                        return ['successful', result[0][0], 'old_user']
 
             else:
                 return ['verification_code_not_found']
