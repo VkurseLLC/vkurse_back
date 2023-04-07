@@ -249,19 +249,17 @@ def user_profile(connection, user_id):
             result = cursor.fetchall()
             about = result[0][0]
             # print(about)
-            cursor.execute("SELECT `user_avatar` FROM `users_photo` WHERE `users_id` = %s ORDER BY `dt_upd` DESC", (int(user_id),))
+            cursor.execute("SELECT `path_to_avatar` FROM `users_avatar` WHERE `users_id` = %s ORDER BY `dt_upd` DESC", (int(user_id),))
             result = cursor.fetchall()
 
             if len(result) == 0:
-                cursor.execute("SELECT `default_image` FROM `users_default_image`")
-                result = cursor.fetchall()
-                photo = result[0][0]
+                photo = 'Null'
             else:
                 photo = result[0][0]
 
             # print(photo)
 
-            return {"name": f"{name}","surname": f"{surname}", "age":f"{str(age)}", "city":f"{city}", "phone_number":f"{phone_number}", "username":f"{username}", "about":f"{about}", "avatar":f"{photo}"}
+            return {"name": f"{name}","surname": f"{surname}", "age":f"{str(age)}", "city":f"{city}", "phone_number":f"{phone_number}", "username":f"{username}", "about":f"{about}", "path_to_avatar":f"{photo}"}
         except Error as e:
                 print(f"Произошла ошибка user_profile: {e}")
                 bot.send_message(chat_id, f"Произошла ошибка в user_profile\n\n{e}")
