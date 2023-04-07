@@ -1,5 +1,7 @@
-from flask import Blueprint, request, json, jsonify
+from flask import Blueprint, request, json, jsonify, render_template
 from flask import Flask
+import os
+import pathlib
 from db import *
 
 application = Flask(__name__)
@@ -120,18 +122,26 @@ def url_show_profile():
     else:
         return jsonify({"answer": "error"})
 
-@application.route('/api/user_profile/image/show_image', methods=["GET", "POST"])
-def url_show_image():
+# @application.route('/api/user_profile/image/show_image', methods=["GET", "POST"])
+# def url_show_image():
 
-    if request.method == "GET":
-        # users_id = request.form["users_id"]
+#     if request.method == "POST":
+#         user_id = request.form['users_id']
+#         avatar = request.files['avatar']
 
-        answer = show_photo(create_connection(), 2)
+#     # Сохраняем файл на сервере
+#         file_path = f'img/{user_id}_avatar.jpg'  # Путь куда сохранять файл на сервере
+#         avatar.save(file_path)
 
-        return answer
+#     # Обновляем информацию о пользователе в базе данных
+#         # user_id = request.form['user_id']  # Получаем идентификатор пользователя из формы
+#         result = update_user_avatar(create_connection(), user_id, file_path)  # Функция, которая обновляет информацию о пользователе в базе данных
 
-    else: 
-        return jsonify({"answer": "error"})
+#     # Возвращаем URL-адрес файла для отображения на фронтенде
+#         return result
+
+#     else: 
+#         return jsonify({"answer": "error"})
 # Сохранение фото
 @application.route('/api/user_profile/image/add_image', methods=["GET", "POST"])
 def url_add_image():
@@ -224,3 +234,39 @@ def url_get_geometca():
 
         else:
             return jsonify({"answer": "error"})
+        
+
+
+#----------------------------------------------------------------#
+
+@application.route('/api/user_profile/image/update_image', methods=['POST'])
+def upload_image():
+    # Получаем файл из запроса
+    users_id = request.form["users_id"]
+    file = request.files['avatar']
+    # url = request.host_url[:20]
+    # Получаем имя файла
+    # file_extension = pathlib.Path(file).suffix
+    # print("File Extension: ", file_extension)
+    filename = f'user_{users_id}_avatar.png'
+
+    # Создаем путь к папке для сохранения изображений
+    upload_path = os.path.join(os.getcwd(), 'users_avatars')
+    # Сохраняем файл в папку
+    file.save(os.path.join(upload_path, filename))
+
+    # Возвращаем URL-адрес для получения изображения
+    image_url = request.host_url[:20] + '/users_avatars/' + filename
+    # print(image_url)
+    result =  update_user_avatar(create_connection(), users_id, image_url)
+    if result == 'successful':
+        return jsonify({"answer": "successful"})
+    else: 
+        return jsonify({"answer": "error"})
+    # return jsonify({'image_url': image_url})
+
+@application.route('/api/user_profile/image/show_image', methods=['GET'])
+def show_avatar():
+
+    users_id = request.form['users_id']
+    return show_photo(create_connection(), users_id)

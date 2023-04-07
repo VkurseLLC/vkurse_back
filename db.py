@@ -6,6 +6,7 @@ from encode_decode import *
 import datetime
 from datetime import date
 from function_holder import *
+import os
 
 # ---------------------------------------------------------------------------------- #
 
@@ -15,9 +16,13 @@ def create_connection():
     try:
         connection = mysql.connector.connect(
             host = '80.78.240.205',
+            # host = '185.128.105.207',
             port = 13306,
+            # port = 3306,
             user = 'vkurse_editor', 
+            # user = 'user',
             password = 'T6XBwtgQ',
+            # password = 'password',
             database = 'vkurse_db')
 
         return connection
@@ -382,19 +387,44 @@ def get_geometca(connection,users_id):
                 bot.send_message(chat_id, f"Произошла ошибка в get_geometca\n\n{e}")
                 return ['error']
 # ---------------------------------------------------------------------------------- #
-def show_photo(connection, user_id):
+def show_photo(connection, users_id):
     with connection.cursor() as cursor:
         try:
             
-            cursor.execute("SELECT `user_avatar` FROM `users_photo` WHERE `users_id` = %s ORDER BY `dt_upd` DESC", (int(user_id),))
+            cursor.execute("SELECT `path_to_avatar` FROM `users_avatars` WHERE `users_id` = %s ORDER BY `dt_upd` DESC", (int(users_id),))
             result = cursor.fetchall()
 
-            return {"avatar": f"{result[0][0]}"}
+            return {"avatar_url": f"{result[0][0]}"}
         
         except Error as e:
                 print(f"Произошла ошибка template: {e}")
                 bot.send_message(chat_id, f"Произошла ошибка в template\n\n{e}")
                 return ['error']
+
+def update_user_avatar(connection, users_id, file_path):
+    with connection.cursor() as cursor:
+        try:
+            # filename = f'user_{users_id}_avatar.png'
+            # upload_path = os.path.join(os.getcwd(), 'users_avatars')
+            # file.save(os.path.join(upload_path, filename))
+            # image_url = url_path + '/users_avatars/' + filename
+
+
+            cursor.executemany("INSERT INTO `users_avatars` (id, users_id, path_to_avatar, dt_upd) VALUES (NULL, %s, %s, NOW())", 
+                               [(int(users_id),str(file_path),)])
+            connection.commit()
+            # cursor.execute("SELECT `user_avatar` FROM `users_photo` WHERE `users_id` = %s ORDER BY `dt_upd` DESC", (int(user_id),))
+            # result = cursor.fetchall()
+            # cursor.execute("SELECT `path_to_avatar` FROM `users_avatars` WHERE `users_id` = %s ORDER BY `dt_upd` DESC", (int(users_id),))
+            # result = cursor.fetchall()
+            # file_path_on_serv = result[0][0]
+            return 'successful'#{"avatar": f"{file_path_on_serv}"}
+        
+        except Error as e:
+                print(f"Произошла ошибка template: {e}")
+                bot.send_message(chat_id, f"Произошла ошибка в template\n\n{e}")
+                return ['error']
+
 
 def template(connection):
     with connection.cursor() as cursor:
@@ -438,3 +468,5 @@ def template(connection):
 # print(get_users_location(create_connection(), 2))
 
 # print(show_photo(create_connection(), 2))
+
+# print(update_user_avatar(create_connection(), 2, 'img\profile_photo.jpg', 'http://192.168.0.153'))
