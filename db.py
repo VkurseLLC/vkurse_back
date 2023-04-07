@@ -77,7 +77,8 @@ def user_authorisation(connection, phone_number_value, verification_code_value):
                     connection.commit()
 
                     cursor.executemany("INSERT INTO `users_phone_number` (id, users_id, user_phone_number, dt_upd) VALUES (NULL, %s, %s, NOW())", [(int(result[0][0]), str(phone_number_value_encode))])
-
+                    cursor.commit()
+                    
                     cursor.execute("SELECT `id` FROM `users` WHERE `phone_number` = %s", (str(phone_number_value),))
                     result = cursor.fetchall()
 
