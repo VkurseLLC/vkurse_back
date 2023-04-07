@@ -303,10 +303,10 @@ def get_users_location(connection, user_id):
             user_location = cursor.fetchall()
             cursor.execute("SELECT `username` FROM `users_username` WHERE `users_id` = %s ORDER BY `dt_upd` DESC", (int(user_id),))
             user_username = cursor.fetchall()
-            cursor.execute("SELECT `user_avatar` FROM `users_photo` WHERE `users_id` = %s ORDER BY `dt_upd` DESC", (int(user_id),))
+            cursor.execute("SELECT `path_to_avatar` FROM `users_avatars` WHERE `users_id` = %s ORDER BY `dt_upd` DESC", (int(user_id),))
             user_photo = cursor.fetchall()
-            if user_photo[0][0] == convert_to_binary_data('img/profile_photo.jpg'):
-                 user_photo = [['null']]
+            if len(user_photo) == 0:
+                 user_photo = [['Null']]
             else:
                  pass
             if len(user_location) != 0:
@@ -315,7 +315,7 @@ def get_users_location(connection, user_id):
                                     "latitude": user_location[0][0],
                                     "longitude": user_location[0][1],
                                     "username": user_username[0][0],
-                                    "photo": user_photo[0][0]})
+                                    "path_to_photo": user_photo[0][0]})
 
             cursor.execute("SELECT `friend_users_id` FROM `users_friends` WHERE `users_id` = %s AND `status` = 0 ORDER BY `dt_rec` DESC", (int(user_id),))
             list_friend = cursor.fetchall()
@@ -327,11 +327,11 @@ def get_users_location(connection, user_id):
                     friend_location = cursor.fetchall()
                     cursor.execute("SELECT `username` FROM `users_username` WHERE `users_id` = %s ORDER BY `dt_upd` DESC", (int(friend[0]),))
                     friend_username = cursor.fetchall()
-                    cursor.execute("SELECT `user_avatar` FROM `users_photo` WHERE `users_id` = %s ORDER BY `dt_upd` DESC", (int(friend[0]),))
+                    cursor.execute("SELECT `path_to_avatar` FROM `users_avatars` WHERE `users_id` = %s ORDER BY `dt_upd` DESC", (int(friend[0]),))
                     friend_photo = cursor.fetchall()
                     print(friend_photo)
-                    if friend_photo[0][0] == convert_to_binary_data('img/profile_photo.jpg'):
-                         friend_photo = [['null']]
+                    if len(friend_photo) == 0:
+                         friend_photo = [['Null']]
                     else:
                         pass
 
@@ -341,7 +341,7 @@ def get_users_location(connection, user_id):
                                             "latitude": friend_location[0][0],
                                             "longitude": friend_location[0][1],
                                             "username": friend_username[0][0],
-                                            "photo": friend_photo[0][0]})
+                                            "path_to_photo": friend_photo[0][0]})
 
             return output_data
 
