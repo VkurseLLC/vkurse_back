@@ -56,7 +56,6 @@ def user_authorisation(connection, phone_number_value, verification_code_value):
             if len(result) != 0: 
 
                 cursor.execute("UPDATE `phone_number_verification_codes` SET `used` = 1 WHERE `id` = %s", (str(result[0][0]),))
-                connection.commit()
 
                 cursor.execute("SELECT `id` FROM `users` WHERE `phone_number` = %s", (str(phone_number_value),))
                 result = cursor.fetchall()
@@ -66,6 +65,8 @@ def user_authorisation(connection, phone_number_value, verification_code_value):
                     cursor.execute("SELECT `id` FROM `users_account_data` WHERE `users_id` = %s", (int(result[0][0]),))
                     user_account_status = cursor.fetchall()
 
+                    connection.commit()
+
                     if len(user_account_status) == 0:
                         return ['successful', result[0][0], 'new_user']
                     
@@ -74,12 +75,11 @@ def user_authorisation(connection, phone_number_value, verification_code_value):
                 
                 else:
                     cursor.executemany("INSERT INTO users (id, phone_number, dt_reg) VALUES (NULL, %s, NOW())", [(str(phone_number_value), )])
-
-                    cursor.executemany("INSERT INTO `users_phone_number` (id, users_id, user_phone_number, dt_upd) VALUES (NULL, %s, %s, NOW())", [(int(result[0][0]), str(phone_number_value_encode))])
-                    cursor.commit()
                     
                     cursor.execute("SELECT `id` FROM `users` WHERE `phone_number` = %s", (str(phone_number_value),))
                     result = cursor.fetchall()
+
+                    cursor.executemany("INSERT INTO `users_phone_number` (id, users_id, user_phone_number, dt_upd) VALUES (NULL, %s, %s, NOW())", [(int(result[0][0]), str(phone_number_value_encode))])
 
                     cursor.execute("SELECT `id` FROM `users_account_data` WHERE `users_id` = %s", (int(result[0][0]),))
                     user_account_status = cursor.fetchall()
