@@ -223,50 +223,69 @@ def city_selection(connection):
 def user_profile(connection, user_id):
     with connection.cursor() as cursor:
         try:
+            name = 'Null'
+            surname = 'Null'
+            age = 'Null'
+            city = 'Null'
+            phone_number = 'Null'
+            about = 'Null'
+            username = 'Null'
+            photo = 'Null'
+
+
             cursor.execute("SELECT `name_surname` FROM `users_account_data` WHERE `users_id` = %s ORDER BY `dt_upd` DESC", (int(user_id),))
             result = cursor.fetchall()
-            name_surname = bytes.decode(decrypt(str_to_dict(result[0][0]), crypto_key)).replace("'",'')
-            name = name_surname.split()[0]
-            surname = name_surname.split()[1]
+            if len(result) != 0:
+                name_surname = bytes.decode(decrypt(str_to_dict(result[0][0]), crypto_key)).replace("'",'')
+                name = name_surname.split()[0]
+                surname = name_surname.split()[1]
             # print(name_surname)
+
             cursor.execute("SELECT `d_birth` FROM `users_account_data` WHERE `users_id` = %s ORDER BY `dt_upd` DESC", (int(user_id),))
             result = cursor.fetchall()
-            d_birth = bytes.decode(decrypt(str_to_dict(result[0][0]), crypto_key)).replace("'",'')
-            age = age_calc(d_birth)
+            if len(result) != 0:
+                d_birth = bytes.decode(decrypt(str_to_dict(result[0][0]), crypto_key)).replace("'",'')
+                age = age_calc(d_birth)
             # print(age)
+
             cursor.execute("SELECT `cities_id` FROM `users_city` WHERE `users_id` = %s ORDER BY `dt_upd` DESC", (int(user_id),))
             result = cursor.fetchall()
             cursor.execute("SELECT `city_name` FROM `cities` WHERE `id` = %s", (int(result[0][0]),))
             result = cursor.fetchall()
-            city = result[0][0]
+            if len(result) != 0:
+                city = result[0][0]
             # print(city)
+
             cursor.execute("SELECT `user_phone_number` FROM `users_phone_number` WHERE `id` = %s", (int(user_id),))
             result = cursor.fetchall()
-            phone_number = bytes.decode(decrypt(str_to_dict(result[0][0]), crypto_key)).replace("'",'')
+            if len(result) != 0:
+                phone_number = bytes.decode(decrypt(str_to_dict(result[0][0]), crypto_key)).replace("'",'')
             # print('+7'+ phone_number)
+
             cursor.execute("SELECT `username` FROM `users_username` WHERE `users_id` = %s ORDER BY `dt_upd` DESC", (int(user_id),))
             result = cursor.fetchall()
-            username = result[0][0]
+            if len(result) != 0:
+                username = result[0][0]
             # print(username)
+
             cursor.execute("SELECT `user_about` FROM `users_about` WHERE `users_id` = %s ORDER BY `dt_upd` DESC", (int(user_id),))
             result = cursor.fetchall()
-            about = result[0][0]
+            if len(result) != 0:
+                about = result[0][0]
             # print(about)
-            cursor.execute("SELECT `path_to_avatar` FROM `users_avatar` WHERE `users_id` = %s ORDER BY `dt_upd` DESC", (int(user_id),))
+
+            cursor.execute("SELECT `path_to_avatar` FROM `users_avatars` WHERE `users_id` = %s ORDER BY `dt_upd` DESC", (int(user_id),))
             result = cursor.fetchall()
-
-            if len(result) == 0:
-                photo = 'Null'
-            else:
-                photo = result[0][0]
-
+            if len(result) != 0:
+                 photo = result[0][0]
             # print(photo)
 
             return {"name": f"{name}","surname": f"{surname}", "age":f"{str(age)}", "city":f"{city}", "phone_number":f"{phone_number}", "username":f"{username}", "about":f"{about}", "path_to_avatar":f"{photo}"}
+        
         except Error as e:
-                print(f"Произошла ошибка user_profile: {e}")
-                bot.send_message(chat_id, f"Произошла ошибка в user_profile\n\n{e}")
-                return ['error']
+            print(f"Произошла ошибка user_profile: {e}")
+            bot.send_message(chat_id, f"Произошла ошибка в user_profile\n\n{e}")
+            return ['error']
         
 def add_about(connection, users_id, about):
     with connection.cursor() as cursor:
