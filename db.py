@@ -74,7 +74,6 @@ def user_authorisation(connection, phone_number_value, verification_code_value):
                 
                 else:
                     cursor.executemany("INSERT INTO users (id, phone_number, dt_reg) VALUES (NULL, %s, NOW())", [(str(phone_number_value), )])
-                    connection.commit()
 
                     cursor.executemany("INSERT INTO `users_phone_number` (id, users_id, user_phone_number, dt_upd) VALUES (NULL, %s, %s, NOW())", [(int(result[0][0]), str(phone_number_value_encode))])
 
@@ -84,6 +83,8 @@ def user_authorisation(connection, phone_number_value, verification_code_value):
                     cursor.execute("SELECT `id` FROM `users_account_data` WHERE `users_id` = %s", (int(result[0][0]),))
                     user_account_status = cursor.fetchall()
 
+                    connection.commit()
+                    
                     if len(user_account_status) == 0:
                         return ['successful', result[0][0], 'new_user']
                     
@@ -133,6 +134,7 @@ def filling_profile(connection, users_id, username, name_surname, d_birth, city)
         try:
 
             check_username = check_username_availability(create_connection(), username)
+            
             name_surname = encrypt(repr(name_surname), crypto_key)
             # surname = encrypt(repr(surname), crypto_key)
             d_birth = encrypt(repr(d_birth), crypto_key) 
