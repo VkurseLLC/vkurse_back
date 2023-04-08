@@ -76,7 +76,8 @@ def user_authorisation(connection, phone_number_value, verification_code_value):
                     cursor.executemany("INSERT INTO users (id, phone_number, dt_reg) VALUES (NULL, %s, NOW())", [(str(phone_number_value), )])
 
                     cursor.executemany("INSERT INTO `users_phone_number` (id, users_id, user_phone_number, dt_upd) VALUES (NULL, %s, %s, NOW())", [(int(result[0][0]), str(phone_number_value_encode))])
-
+                    cursor.commit()
+                    
                     cursor.execute("SELECT `id` FROM `users` WHERE `phone_number` = %s", (str(phone_number_value),))
                     result = cursor.fetchall()
 
@@ -251,19 +252,17 @@ def user_profile(connection, user_id):
             result = cursor.fetchall()
             about = result[0][0]
             # print(about)
-            cursor.execute("SELECT `user_avatar` FROM `users_photo` WHERE `users_id` = %s ORDER BY `dt_upd` DESC", (int(user_id),))
+            cursor.execute("SELECT `path_to_avatar` FROM `users_avatar` WHERE `users_id` = %s ORDER BY `dt_upd` DESC", (int(user_id),))
             result = cursor.fetchall()
 
             if len(result) == 0:
-                cursor.execute("SELECT `default_image` FROM `users_default_image`")
-                result = cursor.fetchall()
-                photo = result[0][0]
+                photo = 'Null'
             else:
                 photo = result[0][0]
 
             # print(photo)
 
-            return {"name": f"{name}","surname": f"{surname}", "age":f"{str(age)}", "city":f"{city}", "phone_number":f"{phone_number}", "username":f"{username}", "about":f"{about}", "avatar":f"{photo}"}
+            return {"name": f"{name}","surname": f"{surname}", "age":f"{str(age)}", "city":f"{city}", "phone_number":f"{phone_number}", "username":f"{username}", "about":f"{about}", "path_to_avatar":f"{photo}"}
         except Error as e:
                 print(f"Произошла ошибка user_profile: {e}")
                 bot.send_message(chat_id, f"Произошла ошибка в user_profile\n\n{e}")
@@ -307,10 +306,10 @@ def get_users_location(connection, user_id):
             user_location = cursor.fetchall()
             cursor.execute("SELECT `username` FROM `users_username` WHERE `users_id` = %s ORDER BY `dt_upd` DESC", (int(user_id),))
             user_username = cursor.fetchall()
-            cursor.execute("SELECT `user_avatar` FROM `users_photo` WHERE `users_id` = %s ORDER BY `dt_upd` DESC", (int(user_id),))
+            cursor.execute("SELECT `path_to_avatar` FROM `users_avatars` WHERE `users_id` = %s ORDER BY `dt_upd` DESC", (int(user_id),))
             user_photo = cursor.fetchall()
-            if user_photo[0][0] == convert_to_binary_data('img/profile_photo.jpg'):
-                 user_photo = [['null']]
+            if len(user_photo) == 0:
+                 user_photo = [['Null']]
             else:
                  pass
             if len(user_location) != 0:
@@ -319,7 +318,7 @@ def get_users_location(connection, user_id):
                                     "latitude": user_location[0][0],
                                     "longitude": user_location[0][1],
                                     "username": user_username[0][0],
-                                    "photo": user_photo[0][0]})
+                                    "path_to_photo": user_photo[0][0]})
 
             cursor.execute("SELECT `friend_users_id` FROM `users_friends` WHERE `users_id` = %s AND `status` = 0 ORDER BY `dt_rec` DESC", (int(user_id),))
             list_friend = cursor.fetchall()
@@ -331,11 +330,11 @@ def get_users_location(connection, user_id):
                     friend_location = cursor.fetchall()
                     cursor.execute("SELECT `username` FROM `users_username` WHERE `users_id` = %s ORDER BY `dt_upd` DESC", (int(friend[0]),))
                     friend_username = cursor.fetchall()
-                    cursor.execute("SELECT `user_avatar` FROM `users_photo` WHERE `users_id` = %s ORDER BY `dt_upd` DESC", (int(friend[0]),))
+                    cursor.execute("SELECT `path_to_avatar` FROM `users_avatars` WHERE `users_id` = %s ORDER BY `dt_upd` DESC", (int(friend[0]),))
                     friend_photo = cursor.fetchall()
                     print(friend_photo)
-                    if friend_photo[0][0] == convert_to_binary_data('img/profile_photo.jpg'):
-                         friend_photo = [['null']]
+                    if len(friend_photo) == 0:
+                         friend_photo = [['Null']]
                     else:
                         pass
 
@@ -345,7 +344,7 @@ def get_users_location(connection, user_id):
                                             "latitude": friend_location[0][0],
                                             "longitude": friend_location[0][1],
                                             "username": friend_username[0][0],
-                                            "photo": friend_photo[0][0]})
+                                            "path_to_photo": friend_photo[0][0]})
 
             return output_data
 
