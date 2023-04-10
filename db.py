@@ -235,8 +235,10 @@ def user_profile(connection, user_id):
 
             cursor.execute("SELECT `name_surname` FROM `users_account_data` WHERE `users_id` = %s ORDER BY `dt_upd` DESC", (int(user_id),))
             result = cursor.fetchall()
+            print(result[0][0])
             if len(result) != 0:
                 name_surname = bytes.decode(decrypt(str_to_dict(result[0][0]), crypto_key)).replace("'",'')
+                print(name_surname)
                 name = name_surname.split()[0]
                 surname = name_surname.split()[1]
             # print(name_surname)
@@ -327,6 +329,13 @@ def get_users_location(connection, user_id):
             user_username = cursor.fetchall()
             cursor.execute("SELECT `path_to_avatar` FROM `users_avatars` WHERE `users_id` = %s ORDER BY `dt_upd` DESC", (int(user_id),))
             user_photo = cursor.fetchall()
+            cursor.execute("SELECT `name_surname` FROM `users_account_data` WHERE `users_id` = %s ORDER BY `dt_upd` DESC", (int(user_id),))
+            result = cursor.fetchall()
+            name_surname = bytes.decode(decrypt(str_to_dict(result[0][0]), crypto_key)).replace("'",'')
+                # print(name_surname)
+            # name = name_surname.split()[0]
+            # surname = name_surname.split()[1]
+
             if len(user_photo) == 0:
                  user_photo = [['Null']]
             else:
@@ -337,6 +346,8 @@ def get_users_location(connection, user_id):
                                     "latitude": user_location[0][0],
                                     "longitude": user_location[0][1],
                                     "username": user_username[0][0],
+                                    "name": name_surname.split()[0],
+                                    "surname": name_surname.split()[1],
                                     "path_to_photo": user_photo[0][0]})
 
             cursor.execute("SELECT `friend_users_id` FROM `users_friends` WHERE `users_id` = %s AND `status` = 0 ORDER BY `dt_rec` DESC", (int(user_id),))
@@ -351,7 +362,10 @@ def get_users_location(connection, user_id):
                     friend_username = cursor.fetchall()
                     cursor.execute("SELECT `path_to_avatar` FROM `users_avatars` WHERE `users_id` = %s ORDER BY `dt_upd` DESC", (int(friend[0]),))
                     friend_photo = cursor.fetchall()
-                    print(friend_photo)
+                    cursor.execute("SELECT `name_surname` FROM `users_account_data` WHERE `users_id` = %s ORDER BY `dt_upd` DESC", (int(friend[0]),))
+                    result = cursor.fetchall()
+                    friend_name_surname = bytes.decode(decrypt(str_to_dict(result[0][0]), crypto_key)).replace("'",'')
+                    # print(friend_photo)
                     if len(friend_photo) == 0:
                          friend_photo = [['Null']]
                     else:
@@ -363,6 +377,8 @@ def get_users_location(connection, user_id):
                                             "latitude": friend_location[0][0],
                                             "longitude": friend_location[0][1],
                                             "username": friend_username[0][0],
+                                            "name": friend_name_surname.split()[0],
+                                            "surname": friend_name_surname.split()[1],
                                             "path_to_photo": friend_photo[0][0]})
 
             return output_data
@@ -475,7 +491,10 @@ def template(connection):
 
 # print(get_user_id(create_connection(), "79958932523"))
 
-# print(user_profile(create_connection(), "2"))
+# print(user_profile(create_connection(), "1"))
+
+print(get_users_location(create_connection(), 1))
+
 
 # print(add_about(create_connection(), 2, "Обо мне"))
 
