@@ -44,12 +44,12 @@ def user_authorisation(connection, phone_number_value, verification_code_value):
             phone_number_value = phone_number_value.replace('-','')
             phone_number_value = phone_number_value.replace(' ','')
 
-            phone_number_value  = (hashlib.sha256(repr(phone_number_value).encode())).hexdigest()
+            phone_number_value_hash  = (hashlib.sha256(repr(phone_number_value).encode())).hexdigest()
             phone_number_value_encode = encrypt(repr(phone_number_value), crypto_key)
             verification_code_value  = (hashlib.sha256(repr(int(verification_code_value)).encode())).hexdigest()
 
             cursor.execute("SELECT `id` FROM `phone_number_verification_codes` WHERE `phone_number` = %s AND verification_code = %s AND TIMEDIFF (NOW(), `dt_create`) <= '00:03:00' AND `used` = 0",
-                            (str(phone_number_value), str(verification_code_value)))
+                            (str(phone_number_value_hash), str(verification_code_value)))
             result = cursor.fetchall()
             print(f'result: {result}')
             
@@ -57,7 +57,7 @@ def user_authorisation(connection, phone_number_value, verification_code_value):
 
                 cursor.execute("UPDATE `phone_number_verification_codes` SET `used` = 1 WHERE `id` = %s", (str(result[0][0]),))
 
-                cursor.execute("SELECT `id` FROM `users` WHERE `phone_number` = %s", (str(phone_number_value),))
+                cursor.execute("SELECT `id` FROM `users` WHERE `phone_number` = %s", (str(phone_number_value_hash),))
                 result = cursor.fetchall()
 
                 if len(result) != 0:
@@ -74,9 +74,9 @@ def user_authorisation(connection, phone_number_value, verification_code_value):
                         return ['successful', result[0][0], 'old_user']
                 
                 else:
-                    cursor.executemany("INSERT INTO users (id, phone_number, dt_reg) VALUES (NULL, %s, NOW())", [(str(phone_number_value), )])
+                    cursor.executemany("INSERT INTO users (id, phone_number, dt_reg) VALUES (NULL, %s, NOW())", [(str(phone_number_value_hash), )])
                     
-                    cursor.execute("SELECT `id` FROM `users` WHERE `phone_number` = %s", (str(phone_number_value),))
+                    cursor.execute("SELECT `id` FROM `users` WHERE `phone_number` = %s", (str(phone_number_value_hash),))
                     result = cursor.fetchall()
 
                     cursor.executemany("INSERT INTO `users_phone_number` (id, users_id, user_phone_number, dt_upd) VALUES (NULL, %s, %s, NOW())", [(int(result[0][0]), str(phone_number_value_encode))])
